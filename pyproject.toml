@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "scout"
+version = "0.1.0"
+description = "A FastAPI-powered web application that fetches latest tech news articles"
+authors = ["Your Name <your.email@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastapi = "^0.104.0"
+uvicorn = "^0.24.0"
+jinja2 = "^3.1.2"
+python-multipart = "^0.0.6"
+python-dotenv = "^1.0.0"
+newsapi-python = "^0.2.7"
+pydantic-settings = "^2.8.1"
+google-cloud-texttospeech = "^2.25.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.3"
+black = "^23.10.1"
+isort = "^5.12.0"
+flake8 = "^6.1.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

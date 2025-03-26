@@ -32,6 +32,10 @@ MANIFEST
 *.manifest
 *.spec
 
+# Ignore all JSON credential files
+credentials/*.json
+
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
@@ -77,6 +81,7 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+*.ipynb
 
 # IPython
 profile_default/
