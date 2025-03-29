@@ -2,16 +2,14 @@
 
 import requests
 import logging
+import inspect
 import os
 from typing import List
 from openai import OpenAI
 from app.config import settings  # Use the existing instance, not the class
-
-
-
+from functools import wraps
 
 logger = logging.getLogger(__name__)
-
 
 # Global registry for all tool functions
 TOOLS_REGISTRY = []
@@ -109,6 +107,7 @@ def _test_openai_api():
 
 
 
+
 @register_tool
 def get_news_briefing() -> dict:
     """Get a comprehensive briefing of the latest tech news.
@@ -118,15 +117,7 @@ def get_news_briefing() -> dict:
     2. Create a summary of the key developments
     3. Return a formatted briefing
     """
-    # Adjust number of articles based on summary length
-    # articles_count = {
-    #     "short": 5,
-    #     "medium": 10,
-    #     "long": 15
-    # }.get(summary_length, 5)
-    
-    # Test APIs first
-    # await test_google_credentials()
+
     _test_openai_api()
 
     articles = _fetch_latest_news()  # Use adjusted count
@@ -136,14 +127,120 @@ def get_news_briefing() -> dict:
     
     return summary
 
-    # return {
-    #     "summary": summary,
-    #     "audio_content": audio
-    # } 
 
 
+
+@register_tool
+def search_web_context(user_query: str, topic: str, days: int, search_depth: str = "basic") -> str:
+    """
+    Performs an intelligent web search using Tavily API to provide contextual information.
+    
+    This tool complements the news briefing functionality by searching across the broader internet
+    for relevant context, explanations, and background information. It can be used to:
+    - Provide historical context for current news
+    - Find detailed explanations of technical concepts
+    - Gather multiple perspectives on a topic
+    - Search for specific facts or statistics
+    
+    Args:
+        user_query (str): The search query to be processed
+        topic (str): The topic of the search
+        days (int): The number of days to search
+        search_depth (str, optional): Level of search depth. 
+            "basic" - Quick search for general information
+            "deep" - More comprehensive search including analysis and academic sources
+            Defaults to "basic".
+
+    Returns:
+        str: Curated search results formatted as a coherent response
+        
+    Example:
+        query = "What is the background of Silicon Valley Bank collapse?"
+        result = search_web_context(query, topic, days, search_depth="deep")
+    """
+
+    url = "https://api.tavily.com/search"
+
+    payload = {
+        "query": user_query,
+        "topic": topic,
+        "search_depth": search_depth,
+        "chunks_per_source": 3,
+        "max_results": 5,
+        "time_range": None,
+        "days": days,
+        "include_answer": True,
+        "include_raw_content": False,
+        "include_images": False,
+        "include_image_descriptions": False,
+        "include_domains": [],
+        "exclude_domains": []
+    }
+    headers = {
+        "Authorization": f"Bearer {settings.TAVILY_API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    response = requests.request("POST", url, json=payload, headers=headers)
+
+    return response.text
 
 
 def get_all_tools():
-    """Return the list of all registered tool functions."""
-    return TOOLS_REGISTRY
+    """Returns all available tools."""
+    logger.info("Registering tools...")  # Add this to verify tools are being registered
+    
+    tools = TOOLS_REGISTRY
+    print('tools===============', tools)
+    
+
+    logger.info(f"Registered tools: {[tool.__name__ for tool in tools]}")
+    return tools
+
+
+def function_to_schema(func) -> dict:
+    type_map = {
+        str: "string",
+        int: "integer",
+        float: "number",
+        bool: "boolean",
+        list: "array",
+        dict: "object",
+        type(None): "null",
+    }
+
+    try:
+        signature = inspect.signature(func)
+    except ValueError as e:
+        raise ValueError(
+            f"Failed to get signature for function {func.__name__}: {str(e)}"
+        )
+
+    parameters = {}
+    for param in signature.parameters.values():
+        try:
+            param_type = type_map.get(param.annotation, "string")
+        except KeyError as e:
+            raise KeyError(
+                f"Unknown type annotation {param.annotation} for parameter {param.name}: {str(e)}"
+            )
+        parameters[param.name] = {"type": param_type}
+
+    required = [
+        param.name
+        for param in signature.parameters.values()
+        if param.default == inspect._empty
+    ]
+
+    return {
+        "type": "function",
+        "function": {
+            "name": func.__name__,
+            "description": (func.__doc__ or "").strip(),
+            "parameters": {
+                "type": "object",
+                "properties": parameters,
+                "required": required,
+            },
+        },
+    }

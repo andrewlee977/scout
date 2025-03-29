@@ -1,0 +1,101 @@
+""""""
+
+from app.workflows.create_analysts import *
+from app.workflows.interview import *
+from app.models.models import *
+from langgraph.constants import Send
+from langgraph.graph import StateGraph, START, END
+from langgraph.checkpoint.memory import MemorySaver
+from typing import List
+from langchain_core.messages import HumanMessage
+from langchain_core.messages import SystemMessage
+from langchain_openai import ChatOpenAI
+from IPython.display import Markdown
+from app.config import settings
+from app.prompts.prompts import intro_conclusion_instructions, report_writer_instructions
+
+
+class ConductResearch:
+    def __init__(self):
+        self.llm = settings.llm
+        self.interview_builder = InterviewBuilder()
+    
+    @staticmethod
+    def initiate_all_interviews(state: ResearchGraphState):
+        human_analyst_feedback = state.get('human_analyst_feedback', 'approve')
+        
+        if human_analyst_feedback is None or human_analyst_feedback.lower() == 'approve':
+            topic = state["topic"]
+            return [Send("conduct_interview", {
+                "analyst": analyst,
+                "messages": [HumanMessage(
+                    content=f"So you said you were writing an article on {topic}?"
+                )]
+            }) for analyst in state["analysts"]]
+        
+        return "create_analysts"
+
+    # def combine_sections(self, state: ResearchGraphState):
+    #     """ This is the "reduce" step, where we combine the sections into a single report."""
+    #     sections = state.get('sections', [])
+    #     content = "\n\n".join([section for section in sections])
+    #     return {"content": content}
+    
+    def write_report(self, state: ResearchGraphState):
+        # Full set of sections
+        sections = state["sections"]
+        topic = state["topic"]
+
+        # Concat all sections together
+        formatted_str_sections = "\n\n".join([f"{section}" for section in sections])
+        
+        # Summarize the sections into a final report
+        system_message = report_writer_instructions.format(topic=topic, context=formatted_str_sections)    
+        report = self.llm.invoke([SystemMessage(content=system_message)]+[HumanMessage(content=f"Write a report based upon these memos.")]) 
+        return {"content": report.content}
+
+
+
+    def write_introduction(self, state: ResearchGraphState):
+        # Full set of sections
+        sections = state["sections"]
+        topic = state["topic"]
+
+        # Concat all sections together
+        formatted_str_sections = "\n\n".join([f"{section}" for section in sections])
+        
+        # Summarize the sections into a final report
+        
+        instructions = intro_conclusion_instructions.format(topic=topic, formatted_str_sections=formatted_str_sections)    
+        intro = self.llm.invoke([instructions]+[HumanMessage(content=f"Write the report introduction")]) 
+        return {"introduction": intro.content}
+
+    def write_conclusion(self, state: ResearchGraphState):
+        # Full set of sections
+        sections = state["sections"]
+        topic = state["topic"]
+
+        # Concat all sections together
+        formatted_str_sections = "\n\n".join([f"{section}" for section in sections])
+        
+        # Summarize the sections into a final report
+            
+        instructions = intro_conclusion_instructions.format(topic=topic, formatted_str_sections=formatted_str_sections)    
+        conclusion = self.llm.invoke([instructions]+[HumanMessage(content=f"Write the report conclusion")]) 
+        return {"conclusion": conclusion.content}
+
+
+    def finalize_report(self, state: ResearchGraphState):
+        """ Finalize the report with an introduction and conclusion."""
+        content = state['content']
+        topic = state['topic']
+
+        introduction_prompt = f"""Write an introduction for a report on the following topic: {topic}"""
+        conclusion_prompt = f"""Write a conclusion for a report on the following topic: {topic}"""
+
+        introduction = self.llm.invoke([SystemMessage(introduction_prompt)]).content
+        conclusion = self.llm.invoke([SystemMessage(conclusion_prompt)]).content
+
+        final_report = f"{introduction}\n\n{content}\n\n{conclusion}"
+
+        return {"final_report": final_report}

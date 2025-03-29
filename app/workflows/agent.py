@@ -4,6 +4,8 @@ from langgraph.prebuilt import tools_condition, ToolNode
 from langgraph.graph import MessagesState
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
+from langgraph.checkpoint.memory import MemorySaver
+
 
 
 class Agent:
@@ -14,6 +16,7 @@ class Agent:
         """
         self.builder = StateGraph(MessagesState)
         self.sys_msg = SystemMessage(content="You are a helpful assistant tasked with fetching news.")
+        self.memory = MemorySaver()
         
         self.tools = tools
         # self.assistant = assistant
@@ -31,7 +34,7 @@ class Agent:
         # Connect tools back to assistant (ReAct)
         self.builder.add_edge("tools", "assistant")
         # Compile the state graph.
-        self.react_graph = self.builder.compile()
+        self.react_graph = self.builder.compile(interrupt_before=["tools"], checkpointer=self.memory)
 
     def assistant(self, state: MessagesState) -> str:
         """
@@ -51,5 +54,6 @@ class Agent:
 
         messages = self.react_graph.invoke({"messages": messages})
 
-
+        for m in messages["messages"]:
+            m.pretty_print()
         return messages['messages'][-1].content

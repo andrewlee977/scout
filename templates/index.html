@@ -5,20 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simple FastAPI App</title>
     <style>
+        /* Reset any constraining styles */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            max-width: 500px;
-            margin: 40px auto;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+
+        /* Main page wrapper - IMPORTANT: remove any width constraints */
+        .page-wrapper {
+            width: 100%;
+            margin: 0;
             padding: 20px;
-            background-color: #f4f4f4;
-            line-height: 1.6;
         }
+
+        /* Main container - reduced by another 30% */
         .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 95%;
+            max-width: 840px;  /* Reduced from 1200px to 840px */
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
+
         h1 {
             color: #333;
             text-align: center;
@@ -110,56 +120,157 @@
             --play-button-color: #007bff;
             --seek-before-width: 0;
         }
+
+        .analysts-review {
+            width: 100%;
+            padding: 0;
+        }
+
+        /* Adjust gap to accommodate narrower container */
+        .analysts-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;  /* Reduced gap for better fit */
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        .analyst {
+            flex: 1;
+            width: calc(33.33% - 10px);  /* Adjusted calculation for new gap */
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            border: 1px solid #e0e0e0;
+            padding: 15px;  /* Slightly reduced padding */
+        }
+
+        .analyst p {
+            margin: 10px 0;
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+
+        /* Make sure the description doesn't get too long */
+        .analyst p:last-child {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        /* Responsive design for smaller screens */
+        @media (max-width: 768px) {
+            .analysts-container {
+                flex-direction: column;
+            }
+            .analyst {
+                width: 100%;
+                margin-bottom: 15px;
+            }
+        }
+
+        textarea {
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            min-height: 100px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Your AI News Agent</h1>
-        <form action="/submit" method="post">
-            <input 
-                type="text" 
-                name="user_input" 
-                placeholder="Enter your text here" 
-                required
-                maxlength="200"
-            >
-            <button type="submit">Submit</button>
-        </form>
-        <!-- {% if result %}
-        <div class="result">
-            {{ result }}
-        </div> -->
-        {% endif %}
-        {% if audio_content %}
-            <div class="audio-player mt-4">
-                <audio id="responseAudio" controls autoplay>
-                    <source src="data:audio/mp3;base64,{{ audio_content | b64encode }}" type="audio/mp3">
-                </audio>
-                <div id="audioIndicator" class="audio-indicator"></div>
+    <div class="page-wrapper">
+        <div class="container">
+            <h1>Your AI News Agent</h1>
+            <form action="/submit" method="post">
+                <input 
+                    type="text" 
+                    name="user_input" 
+                    placeholder="Enter your text here" 
+                    required
+                    maxlength="200"
+                >
+                <button type="submit">Submit</button>
+            </form>
+            {% if result %}
+            <div class="result">
+                {{ result }}
             </div>
-            <script>
-                const audio = document.getElementById('responseAudio');
-                const indicator = document.getElementById('audioIndicator');
-                
-                // Show/hide indicator based on audio playing state
-                audio.addEventListener('play', () => {
-                    indicator.classList.remove('hidden');
-                });
-                
-                audio.addEventListener('pause', () => {
-                    indicator.classList.add('hidden');
-                });
-                
-                audio.addEventListener('ended', () => {
-                    indicator.classList.add('hidden');
-                });
-                
-                // Play audio when loaded
-                audio.addEventListener('loadeddata', () => {
-                    audio.play();
-                });
-            </script>
-        {% endif %}
+            {% endif %}
+            {% if audio_content %}
+                <div class="audio-player mt-4">
+                    <audio id="responseAudio" controls autoplay>
+                        <source src="data:audio/mp3;base64,{{ audio_content | b64encode }}" type="audio/mp3">
+                    </audio>
+                    <div id="audioIndicator" class="audio-indicator"></div>
+                </div>
+                <script>
+                    const audio = document.getElementById('responseAudio');
+                    const indicator = document.getElementById('audioIndicator');
+                    
+                    // Show/hide indicator based on audio playing state
+                    audio.addEventListener('play', () => {
+                        indicator.classList.remove('hidden');
+                    });
+                    
+                    audio.addEventListener('pause', () => {
+                        indicator.classList.add('hidden');
+                    });
+                    
+                    audio.addEventListener('ended', () => {
+                        indicator.classList.add('hidden');
+                    });
+                    
+                    // Play audio when loaded
+                    audio.addEventListener('loadeddata', () => {
+                        audio.play();
+                    });
+                </script>
+            {% endif %}
+            {% if show_feedback_form %}
+                <div class="analysts-review">
+                    <h2>Review Generated Analysts</h2>
+                    
+                    {% if previous_feedback and previous_feedback != "approve" %}
+                        <div class="previous-feedback">
+                            <h3>Previous Request:</h3>
+                            <p>"{{ previous_feedback }}"</p>
+                        </div>
+                    {% endif %}
+
+                    <div class="analysts-container">
+                        {% for analyst in analysts %}
+                            <div class="analyst">
+                                <p><strong>Name:</strong> {{ analyst.name }}</p>
+                                <p><strong>Role:</strong> {{ analyst.role }}</p>
+                                <p><strong>Description:</strong> {{ analyst.description }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <form method="post" action="/submit_feedback">
+                        <input type="hidden" name="thread_id" value="{{ thread_id }}">
+                        <input type="hidden" name="topic" value="{{ topic }}">
+                        <input type="hidden" name="max_analysts" value="{{ max_analysts }}">
+                        <p>Are these analysts suitable for your question?</p>
+                        <textarea name="feedback" placeholder="Type 'approve' to continue or provide feedback for changes" rows="4"></textarea>
+                        <button type="submit">Submit Feedback</button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
     </div>
 </body>
 </html>
