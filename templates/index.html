@@ -3,294 +3,379 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple FastAPI App</title>
+    <title>AI Podcast Studio</title>
+    <!-- Add Google Fonts for better typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Reset any constraining styles */
-        body {
+        :root {
+            /* Color Palette */
+            --primary-color: #6366F1; /* Indigo */
+            --primary-hover: #4F46E5;
+            --secondary-color: #EC4899; /* Pink */
+            --background-color: #F9FAFB; /* Very light gray */
+            --card-background: #FFFFFF;
+            --text-primary: #1F2937; /* Dark Gray */
+            --text-secondary: #6B7280; /* Medium Gray */
+            --border-color: #E5E7EB; /* Light Gray Border */
+            --success-color: #10B981; /* Emerald */
+            --loading-gradient: linear-gradient(45deg, var(--primary-color), var(--secondary-color), var(--success-color));
+
+            /* Typography */
+            --font-family: 'Inter', sans-serif;
+            --base-font-size: 16px;
+
+            /* Spacing */
+            --spacing-unit: 8px;
+
+            /* Borders */
+            --border-radius-sm: 4px;
+            --border-radius-md: 8px;
+            --border-radius-lg: 12px;
+
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Basic Reset & Body Styles */
+        *, *::before, *::after {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            width: 100%;
         }
 
-        /* Main page wrapper - IMPORTANT: remove any width constraints */
+        body {
+            font-family: var(--font-family);
+            font-size: var(--base-font-size);
+            color: var(--text-primary);
+            background-color: var(--background-color);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Layout */
         .page-wrapper {
             width: 100%;
-            margin: 0;
-            padding: 20px;
+            padding: calc(var(--spacing-unit) * 4); /* 32px */
         }
 
-        /* Main container - reduced by another 30% */
         .container {
-            width: 95%;
-            max-width: 840px;  /* Reduced from 1200px to 840px */
+            max-width: 900px; /* Slightly wider for better spacing */
             margin: 0 auto;
-            padding: 20px;
-            background: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            background-color: transparent; /* Container is just for max-width */
+        }
+
+        /* Sections & Cards */
+        .card {
+            background-color: var(--card-background);
+            border-radius: var(--border-radius-lg);
+            padding: calc(var(--spacing-unit) * 3); /* 24px */
+            margin-bottom: calc(var(--spacing-unit) * 3); /* 24px */
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+        }
+
+        /* Typography */
+        h1, h2, h3 {
+            color: var(--text-primary);
+            margin-bottom: calc(var(--spacing-unit) * 2); /* 16px */
+            font-weight: 600;
         }
 
         h1 {
-            color: #333;
+            font-size: 2.25rem; /* 36px */
             text-align: center;
-            margin-bottom: 20px;
+            font-weight: 700;
+            margin-bottom: var(--spacing-unit);
+            /* Optional: Add a subtle gradient */
+            /* background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent; */
         }
-        input[type="text"] {
+
+        h3.subtitle {
+             text-align: center;
+             color: var(--text-secondary);
+             font-weight: 400;
+             margin-bottom: calc(var(--spacing-unit) * 4); /* 32px */
+        }
+
+        h2 {
+            font-size: 1.5rem; /* 24px */
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: var(--spacing-unit);
+        }
+
+        h3 {
+            font-size: 1.125rem; /* 18px */
+            font-weight: 500;
+        }
+
+        p {
+            margin-bottom: calc(var(--spacing-unit) * 1.5); /* 12px */
+            color: var(--text-secondary);
+        }
+
+        strong {
+           color: var(--text-primary);
+           font-weight: 500;
+        }
+
+        /* Form Elements */
+        input[type="text"],
+        textarea {
             width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .result {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #e9ecef;
-            border-radius: 4px;
-            border-left: 4px solid #007bff;
-        }
-        .audio-indicator {
-            width: 20px;
-            height: 20px;
-            background: linear-gradient(45deg, #007bff, #00ff95, #ff0066);
-            border-radius: 50%;
-            margin: 10px auto;
-            animation: pulse 1.5s infinite ease-in-out;
-            margin-top: 15px;
+            padding: calc(var(--spacing-unit) * 1.5); /* 12px */
+            margin-bottom: calc(var(--spacing-unit) * 2); /* 16px */
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-md);
+            font-family: inherit;
+            font-size: 1rem;
+            color: var(--text-primary);
+            background-color: var(--card-background);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
-        @keyframes pulse {
-            0% { 
-                transform: scale(0.95); 
-                opacity: 0.5;
-                background: linear-gradient(45deg, #007bff, #00ff95, #ff0066);
-            }
-            50% { 
-                transform: scale(1.1); 
-                opacity: 1;
-                background: linear-gradient(45deg, #ff0066, #007bff, #00ff95);
-            }
-            100% { 
-                transform: scale(0.95); 
-                opacity: 0.5;
-                background: linear-gradient(45deg, #00ff95, #ff0066, #007bff);
-            }
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        /* Add these styles for the audio progress bar */
-        audio::-webkit-media-controls-timeline,
-        audio::-webkit-media-controls-progress-bar {
-            background-color: #e9ecef;
-        }
-
-        audio::-webkit-media-controls-current-time-display,
-        audio::-webkit-media-controls-time-remaining-display {
-            color: #333;
-        }
-
-        /* Style the progress bar fill color */
-        audio::-webkit-media-controls-timeline-container {
-            background-color: #007bff;
-        }
-
-        audio::-webkit-media-controls-play-button,
-        audio::-webkit-media-controls-timeline {
-            accent-color: #007bff;
-        }
-
-        /* For Firefox */
-        audio {
-            --play-button-color: #007bff;
-            --seek-before-width: 0;
-        }
-
-        .analysts-review {
-            width: 100%;
-            padding: 0;
-        }
-
-        /* Adjust gap to accommodate narrower container */
-        .analysts-container {
-            display: flex;
-            justify-content: space-between;
-            gap: 15px;  /* Reduced gap for better fit */
-            width: 100%;
-            margin: 20px 0;
-        }
-
-        .analyst {
-            flex: 1;
-            width: calc(33.33% - 10px);  /* Adjusted calculation for new gap */
-            background-color: #f5f5f5;
-            border-radius: 5px;
-            border: 1px solid #e0e0e0;
-            padding: 15px;  /* Slightly reduced padding */
-        }
-
-        .analyst p {
-            margin: 10px 0;
-            word-wrap: break-word;
-            line-height: 1.5;
-        }
-
-        /* Make sure the description doesn't get too long */
-        .analyst p:last-child {
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        /* Responsive design for smaller screens */
-        @media (max-width: 768px) {
-            .analysts-container {
-                flex-direction: column;
-            }
-            .analyst {
-                width: 100%;
-                margin-bottom: 15px;
-            }
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3); /* Focus ring */
         }
 
         textarea {
-            width: 100%;
-            margin: 10px 0;
-            padding: 10px;
             min-height: 100px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            resize: vertical;
         }
 
-        button {
-            padding: 10px 20px;
-            background-color: #007bff;
+        button, .button { /* Added .button class for link-styled buttons */
+            display: inline-block; /* Allows width setting and padding */
+            width: 100%;
+            padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 2.5); /* 12px 20px */
+            background-color: var(--primary-color);
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: var(--border-radius-md);
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 500;
             cursor: pointer;
+            text-align: center;
+            text-decoration: none; /* For link buttons */
+            transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
         }
 
-        button:hover {
-            background-color: #0056b3;
+        button:hover, .button:hover {
+            background-color: var(--primary-hover);
+            box-shadow: var(--shadow-sm);
         }
 
-        .report-section {
-            margin-top: 30px;
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        button:active, .button:active {
+             transform: scale(0.98);
         }
 
-        .report-image {
-            display: flex;
-            justify-content: center;
-            margin: 20px 0;
-        }
-
-        .audio-player {
-            margin-top: 20px;
-        }
-
-        .download-button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .download-button:hover {
-            background-color: #0056b3;
-        }
-
-        .podcast-section {
-            margin-top: 30px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .podcast-content {
-            white-space: pre-wrap;  /* Preserves formatting */
-            font-family: monospace;  /* Makes it look more like a script */
-            line-height: 1.6;
-            padding: 15px;
-        }
-        
-        /* Style different speakers */
-        .podcast-content strong {
-            color: #007bff;
-        }
-
+        /* Loading Indicator */
         .loading-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-top: 20px;
+            padding: calc(var(--spacing-unit) * 4) 0; /* 32px */
         }
 
         .loading-circle {
-            width: 20px;
-            height: 20px;
-            background: linear-gradient(45deg, #007bff, #00ff95, #ff0066);
+            width: 32px; /* Larger */
+            height: 32px;
+            background: var(--loading-gradient);
             border-radius: 50%;
-            margin: 10px auto;
             animation: pulse 1.5s infinite ease-in-out;
-            margin-top: 15px;
         }
+
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 0.7; background: var(--loading-gradient); }
+            50% { transform: scale(1.1); opacity: 1; background: linear-gradient(135deg, var(--secondary-color), var(--success-color), var(--primary-color)); } /* Shift gradient */
+            100% { transform: scale(0.9); opacity: 0.7; background: linear-gradient(225deg, var(--success-color), var(--primary-color), var(--secondary-color)); } /* Shift gradient further */
+        }
+
+        /* Analysts Review Section */
+        .analysts-review {
+            /* Uses .card styling */
+            margin-top: calc(var(--spacing-unit) * 3);
+        }
+
+        .previous-feedback {
+            background-color: #FFFBEB; /* Light Yellow */
+            border: 1px solid #FDE68A; /* Yellow Border */
+            border-radius: var(--border-radius-md);
+            padding: calc(var(--spacing-unit) * 2);
+            margin-bottom: calc(var(--spacing-unit) * 2);
+            font-style: italic;
+            color: #B45309; /* Amber Text */
+        }
+
+        .previous-feedback h3 {
+             color: #92400E; /* Darker Amber */
+             margin-bottom: var(--spacing-unit);
+        }
+
+        .analysts-container {
+            display: grid; /* Use Grid for flexibility */
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Responsive columns */
+            gap: calc(var(--spacing-unit) * 2); /* 16px */
+            margin: calc(var(--spacing-unit) * 2) 0; /* 16px */
+        }
+
+        .analyst {
+            background-color: var(--background-color); /* Slightly different bg */
+            border-radius: var(--border-radius-md);
+            border: 1px solid var(--border-color);
+            padding: calc(var(--spacing-unit) * 2); /* 16px */
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .analyst:hover {
+             transform: translateY(-3px);
+             box-shadow: var(--shadow-sm);
+        }
+
+        .analyst p {
+            margin-bottom: var(--spacing-unit); /* 8px */
+            line-height: 1.5;
+            font-size: 0.9rem;
+        }
+        .analyst strong {
+             display: block; /* Make label take full line */
+             margin-bottom: calc(var(--spacing-unit) / 2);
+             font-weight: 600;
+             color: var(--primary-color);
+        }
+
+        /* Audio Player Section */
+        .audio-player-section {
+            /* Uses .card styling */
+            margin-top: calc(var(--spacing-unit) * 3);
+        }
+
+        audio {
+            width: 100%;
+            margin-top: var(--spacing-unit);
+            /* Basic styling (browser support varies) */
+            accent-color: var(--primary-color); /* Styles playhead/volume */
+        }
+
+        /* Remove the separate audio indicator, rely on the player itself */
+        /* .audio-indicator { display: none; } */
+
+        /* Report Section */
+        .report-section {
+            /* Uses .card styling */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap; /* Allow wrapping on small screens */
+            gap: var(--spacing-unit) * 2;
+        }
+        .report-section h2 {
+             margin-bottom: 0; /* Reset margin as it's flex aligned */
+             border-bottom: none; /* Remove border */
+        }
+
+        .download-button {
+            width: auto; /* Don't force full width */
+            background-color: var(--success-color); /* Different color for download */
+            padding: calc(var(--spacing-unit) * 1.2) calc(var(--spacing-unit) * 2); /* Slightly smaller */
+        }
+        .download-button:hover {
+             background-color: #059669; /* Darker Emerald */
+        }
+
+        /* Podcast Section */
+        .podcast-section {
+            /* Uses .card styling */
+        }
+
+        .podcast-content {
+            white-space: pre-wrap;
+            font-family: monospace; /* Keep monospace for script feel */
+            line-height: 1.7;
+            padding: var(--spacing-unit) * 2;
+            background-color: var(--background-color); /* Slightly different bg */
+            border-radius: var(--border-radius-md);
+            border: 1px solid var(--border-color);
+            max-height: 400px; /* Add scroll for long scripts */
+            overflow-y: auto;
+            color: var(--text-secondary);
+        }
+
+        .podcast-content strong {
+            color: var(--primary-color); /* Highlight speaker names */
+            font-weight: 700; /* Bolder speaker names */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            h1 { font-size: 1.875rem; } /* 30px */
+            h2 { font-size: 1.25rem; } /* 20px */
+            .container { padding: var(--spacing-unit) * 2; } /* 16px */
+            .card { padding: var(--spacing-unit) * 2; } /* 16px */
+
+            .report-section {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+             .report-section h2 {
+                 margin-bottom: var(--spacing-unit) * 2;
+             }
+             .download-button {
+                 width: 100%; /* Full width on mobile */
+             }
+        }
+
     </style>
 </head>
 <body>
     <div class="page-wrapper">
         <div class="container">
-            <h1>AI Podcast Generator</h1>
-            <h3>Process will take a few minutes to complete</h3>
-            
-            <form action="/submit" method="post" id="initialForm">
-                <input 
-                    type="text" 
-                    name="user_input"
-                    placeholder="Enter your text here" 
-                    required
-                    maxlength="200"
-                >
-                <button type="submit">Submit</button>
-            </form>
-            
-            <!-- Simple pulsing circle loading animation -->
+
+            <h1>AI Podcast Studio</h1>
+            <h3 class="subtitle">Generate insightful analysis and discussion in minutes.</h3>
+
+            <!-- Initial Input Form Card -->
+            <div class="card">
+                <form action="/submit" method="post" id="initialForm">
+                    <input
+                        type="text"
+                        name="user_input"
+                        placeholder="Enter topic (e.g., 'what is the founding story of nvidia?')"
+                        required
+                        maxlength="200"
+                        aria-label="Podcast Topic Input"
+                    >
+                    <button type="submit">Generate Analysis</button>
+                </form>
+            </div>
+
+            <!-- Loading Indicator -->
             <div id="loading" class="loading-container" style="display: none;">
                 <div class="loading-circle"></div>
             </div>
 
+            <!-- Analyst Feedback Section (Conditional) -->
             {% if show_feedback_form %}
-                <div class="analysts-review">
+                <div class="analysts-review card">
                     <h2>Review Generated Analysts</h2>
-                    
+
                     {% if previous_feedback and previous_feedback != "approve" %}
                         <div class="previous-feedback">
-                            <h3>Previous Request:</h3>
+                            <h3>Your Previous Feedback:</h3>
                             <p>"{{ previous_feedback }}"</p>
                         </div>
                     {% endif %}
+
+                    <p>Review the proposed analysts. If they fit your topic, type 'approve'. Otherwise, provide specific feedback for revisions.</p>
 
                     <div class="analysts-container">
                         {% for analyst in analysts %}
@@ -302,82 +387,151 @@
                         {% endfor %}
                     </div>
 
-                    <form method="post" action="/submit_feedback">
+                    <form method="post" action="/submit_feedback" id="feedbackForm">
                         <input type="hidden" name="thread_id" value="{{ thread_id }}">
                         <input type="hidden" name="topic" value="{{ topic }}">
                         <input type="hidden" name="max_analysts" value="{{ max_analysts }}">
-                        <p>Are these analysts suitable for your question?</p>
-                        <textarea name="feedback" placeholder="Type 'approve' to continue or provide feedback for changes" rows="4"></textarea>
+                        <textarea name="feedback" placeholder="Type 'approve' or provide feedback..." rows="4" required aria-label="Analyst Feedback Input"></textarea>
                         <button type="submit">Submit Feedback</button>
                     </form>
                 </div>
             {% endif %}
 
-            {% if audio_content %}
-                <div class="audio-player mt-4">
+            <!-- Research Report Section (Conditional) -->
+            {% if result %}
+                <div class="report-section card">
+                    <h2>Research Report</h2>
+                    <a href="/download-report?thread_id={{ thread_id }}" class="button download-button">
+                        Download PDF Report
+                    </a>
+                    <!-- Maybe add a preview snippet here in the future -->
+                </div>
+            {% endif %}
+
+            <!-- Podcast Script Section (Conditional) -->
+            {% if podcast_script %}
+                <div class="podcast-section card">
+                    <h2>Podcast Discussion Script</h2>
+                    <div class="podcast-content">
+                        {{ podcast_script | safe }}
+                    </div>
+                </div>
+            {% endif %}
+
+             <!-- Audio Player (Conditional - Placed after Script for logical flow) -->
+             {% if audio_content %}
+                <div class="audio-player-section card">
+                     <h2>Listen to Podcast</h2>
                     <audio id="responseAudio" controls autoplay>
                         <source src="data:audio/mp3;base64,{{ audio_content | b64encode }}" type="audio/mp3">
+                        Your browser does not support the audio element.
                     </audio>
-                    <div id="audioIndicator" class="audio-indicator"></div>
+                    <!-- Removed separate pulsing indicator, relying on player controls -->
                 </div>
             {% endif %}
 
-            <div class="report-section">
-                {% if result %}
-                    <h2>Research Report</h2>
-                    <button onclick="window.location.href='/download-report?thread_id={{ thread_id }}'" class="download-button">
-                        Download PDF Report
-                    </button>
-                {% endif %}
-            </div>
-
-            <!-- Add the new podcast section -->
-            {% if podcast_script %}
-            <div class="podcast-section">
-                <h2>Podcast Discussion</h2>
-                <div class="podcast-content">
-                    {{ podcast_script | safe }}
-                </div>
-            </div>
-            {% endif %}
-        </div>
-    </div>
+        </div> <!-- /container -->
+    </div> <!-- /page-wrapper -->
 
     <script>
-        // Show loading on initial form submit
-        document.getElementById('initialForm').addEventListener('submit', function() {
+        // Function to show loading and hide forms/results
+        function showLoading() {
             document.getElementById('loading').style.display = 'flex';
-            // Hide audio indicator if it exists
-            const audioIndicator = document.getElementById('audioIndicator');
-            if (audioIndicator) {
-                audioIndicator.style.display = 'none';
-            }
-        });
+            // Optionally hide other sections while loading for cleaner UX
+             const sectionsToHide = document.querySelectorAll('.card, .report-section, .podcast-section, .audio-player-section, .analysts-review');
+             sectionsToHide.forEach(section => {
+                 // Don't hide the loading indicator's parent if it's inside one of these structures (it isn't here, but good practice)
+                 if (section.id !== 'loading' && !section.contains(document.getElementById('loading'))) {
+                    // section.style.display = 'none';
+                 }
+             });
+        }
+
+        // Show loading on initial form submit
+        const initialForm = document.getElementById('initialForm');
+        if (initialForm) {
+            initialForm.addEventListener('submit', function() {
+                showLoading();
+                 // Disable button to prevent multiple submits
+                this.querySelector('button[type="submit"]').disabled = true;
+                this.querySelector('button[type="submit"]').textContent = 'Generating...';
+            });
+        }
 
         // Show loading on feedback form submit
-        {% if show_feedback_form %}
-        document.querySelector('form[action="/submit_feedback"]').addEventListener('submit', function() {
-            document.getElementById('loading').style.display = 'flex';
-            // Hide audio indicator if it exists
-            const audioIndicator = document.getElementById('audioIndicator');
-            if (audioIndicator) {
-                audioIndicator.style.display = 'none';
-            }
-        });
-        {% endif %}
+        const feedbackForm = document.getElementById('feedbackForm');
+         if (feedbackForm) {
+             feedbackForm.addEventListener('submit', function() {
+                showLoading();
+                 // Disable button
+                 this.querySelector('button[type="submit"]').disabled = true;
+                 this.querySelector('button[type="submit"]').textContent = 'Submitting...';
+             });
+         }
 
-        // When audio starts playing
-        {% if audio_content %}
-        document.getElementById('responseAudio').addEventListener('play', function() {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('audioIndicator').style.display = 'none';
-        });
+        // Hide loading indicator when audio starts playing (indicates content is ready)
+         const responseAudio = document.getElementById('responseAudio');
+         if (responseAudio) {
+            // Need to ensure loading is hidden once the page loads with audio already present
+             document.addEventListener('DOMContentLoaded', () => {
+                 // If audio element exists and has a source, hide loading initially
+                 if (responseAudio.currentSrc || responseAudio.querySelector('source')?.src) {
+                    document.getElementById('loading').style.display = 'none';
+                 }
+             });
 
-        // When audio ends
-        document.getElementById('responseAudio').addEventListener('ended', function() {
-            document.getElementById('audioIndicator').style.display = 'none';
-        });
-        {% endif %}
+             responseAudio.addEventListener('play', function() {
+                 document.getElementById('loading').style.display = 'none';
+             });
+
+             // Also hide loading if audio exists but isn't autoplaying or fails to play
+             responseAudio.addEventListener('canplay', function() {
+                  document.getElementById('loading').style.display = 'none';
+             });
+         } else {
+             // If there's no audio element expected on this page load, ensure loading is hidden
+             // (covers cases where only text/report is shown after feedback/initial submit)
+            document.addEventListener('DOMContentLoaded', () => {
+                // Check if loading is currently displayed *and* there's no audio element
+                const loadingIndicator = document.getElementById('loading');
+                if (!responseAudio && loadingIndicator.style.display !== 'none') {
+                    // Hide it if we are not expecting audio and it's visible
+                    // This logic might need refinement depending on the exact backend flow
+                    // If the backend *always* hides loading when rendering the final page, this might be redundant.
+                    // But as a fallback:
+                     // loadingIndicator.style.display = 'none';
+                }
+
+                // Re-enable forms if page loaded without starting audio (e.g., validation error redisplay)
+                if (initialForm) {
+                     const button = initialForm.querySelector('button[type="submit"]');
+                     if (button.disabled) {
+                         button.disabled = false;
+                         button.textContent = 'Generate Analysis';
+                     }
+                }
+                if (feedbackForm) {
+                    const button = feedbackForm.querySelector('button[type="submit"]');
+                    if (button.disabled) {
+                         button.disabled = false;
+                         button.textContent = 'Submit Feedback';
+                     }
+                }
+             });
+         }
+
+         // Fallback: Ensure loading is hidden when the window finishes loading fully
+         window.addEventListener('load', () => {
+             const loadingIndicator = document.getElementById('loading');
+              if (loadingIndicator.style.display !== 'none' && !responseAudio?.paused === false) { // Hide if visible and audio isn't actively playing
+                  // loadingIndicator.style.display = 'none';
+              }
+              // Final check to re-enable buttons if something went wrong
+              if (initialForm) initialForm.querySelector('button[type="submit"]').disabled = false;
+              if (feedbackForm) feedbackForm.querySelector('button[type="submit"]').disabled = false;
+
+         });
+
     </script>
 </body>
 </html>
