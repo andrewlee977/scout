@@ -1,11 +1,8 @@
 """"""
 
 from langchain_core.messages import SystemMessage, HumanMessage
-from langchain_openai import ChatOpenAI
-from app.models.models import Analyst, Perspectives, GenerateAnalystsState
-from langgraph.graph import START, END, StateGraph
-from langgraph.checkpoint.memory import MemorySaver
-from IPython.display import Image, display
+from app.models.models import Perspectives, GenerateAnalystsState
+from langgraph.graph import END
 from app.config import settings
 from app.prompts.prompts import analyst_instructions
 

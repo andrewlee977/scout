@@ -1,5 +1,4 @@
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, get_buffer_string
-from langchain_openai import ChatOpenAI
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_community.document_loaders import WikipediaLoader
 from app.models.models import InterviewState, SearchQuery

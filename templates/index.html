@@ -188,57 +188,98 @@
         button:hover {
             background-color: #0056b3;
         }
+
+        .report-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .report-image {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .audio-player {
+            margin-top: 20px;
+        }
+
+        .download-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .download-button:hover {
+            background-color: #0056b3;
+        }
+
+        .podcast-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .podcast-content {
+            white-space: pre-wrap;  /* Preserves formatting */
+            font-family: monospace;  /* Makes it look more like a script */
+            line-height: 1.6;
+            padding: 15px;
+        }
+        
+        /* Style different speakers */
+        .podcast-content strong {
+            color: #007bff;
+        }
+
+        .loading-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .loading-circle {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(45deg, #007bff, #00ff95, #ff0066);
+            border-radius: 50%;
+            margin: 10px auto;
+            animation: pulse 1.5s infinite ease-in-out;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
     <div class="page-wrapper">
         <div class="container">
             <h1>Your AI Reports Agent</h1>
-            <form action="/submit" method="post">
+            
+            <form action="/submit" method="post" id="initialForm">
                 <input 
                     type="text" 
-                    name="user_input" 
+                    name="user_input"
                     placeholder="Enter your text here" 
                     required
                     maxlength="200"
                 >
                 <button type="submit">Submit</button>
             </form>
-            {% if result %}
-            <div class="result">
-                {{ result }}
+            
+            <!-- Simple pulsing circle loading animation -->
+            <div id="loading" class="loading-container" style="display: none;">
+                <div class="loading-circle"></div>
             </div>
-            {% endif %}
-            {% if audio_content %}
-                <div class="audio-player mt-4">
-                    <audio id="responseAudio" controls autoplay>
-                        <source src="data:audio/mp3;base64,{{ audio_content | b64encode }}" type="audio/mp3">
-                    </audio>
-                    <div id="audioIndicator" class="audio-indicator"></div>
-                </div>
-                <script>
-                    const audio = document.getElementById('responseAudio');
-                    const indicator = document.getElementById('audioIndicator');
-                    
-                    // Show/hide indicator based on audio playing state
-                    audio.addEventListener('play', () => {
-                        indicator.classList.remove('hidden');
-                    });
-                    
-                    audio.addEventListener('pause', () => {
-                        indicator.classList.add('hidden');
-                    });
-                    
-                    audio.addEventListener('ended', () => {
-                        indicator.classList.add('hidden');
-                    });
-                    
-                    // Play audio when loaded
-                    audio.addEventListener('loadeddata', () => {
-                        audio.play();
-                    });
-                </script>
-            {% endif %}
+
             {% if show_feedback_form %}
                 <div class="analysts-review">
                     <h2>Review Generated Analysts</h2>
@@ -270,7 +311,72 @@
                     </form>
                 </div>
             {% endif %}
+
+            {% if audio_content %}
+                <div class="audio-player mt-4">
+                    <audio id="responseAudio" controls autoplay>
+                        <source src="data:audio/mp3;base64,{{ audio_content | b64encode }}" type="audio/mp3">
+                    </audio>
+                    <div id="audioIndicator" class="audio-indicator"></div>
+                </div>
+            {% endif %}
+
+            <div class="report-section">
+                {% if result %}
+                    <h2>Research Report</h2>
+                    <button onclick="window.location.href='/download-report'" class="download-button">
+                        Download PDF Report
+                    </button>
+                {% endif %}
+            </div>
+
+            <!-- Add the new podcast section -->
+            {% if podcast_script %}
+            <div class="podcast-section">
+                <h2>Podcast Discussion</h2>
+                <div class="podcast-content">
+                    {{ podcast_script | safe }}
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
+
+    <script>
+        // Show loading on initial form submit
+        document.getElementById('initialForm').addEventListener('submit', function() {
+            document.getElementById('loading').style.display = 'flex';
+            // Hide audio indicator if it exists
+            const audioIndicator = document.getElementById('audioIndicator');
+            if (audioIndicator) {
+                audioIndicator.style.display = 'none';
+            }
+        });
+
+        // Show loading on feedback form submit
+        {% if show_feedback_form %}
+        document.querySelector('form[action="/submit_feedback"]').addEventListener('submit', function() {
+            document.getElementById('loading').style.display = 'flex';
+            // Hide audio indicator if it exists
+            const audioIndicator = document.getElementById('audioIndicator');
+            if (audioIndicator) {
+                audioIndicator.style.display = 'none';
+            }
+        });
+        {% endif %}
+
+        // When audio starts playing
+        {% if audio_content %}
+        document.getElementById('responseAudio').addEventListener('play', function() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('audioIndicator').style.display = 'none';
+        });
+
+        // When audio ends
+        document.getElementById('responseAudio').addEventListener('ended', function() {
+            document.getElementById('audioIndicator').style.display = 'none';
+        });
+        {% endif %}
+    </script>
 </body>
 </html>

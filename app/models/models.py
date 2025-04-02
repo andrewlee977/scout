@@ -4,7 +4,7 @@ import operator
 from typing import List, Annotated
 from typing_extensions import TypedDict
 from pydantic import BaseModel, Field
-from langgraph.graph import END, MessagesState, START, StateGraph
+from langgraph.graph import MessagesState
 
 
 class Analyst(BaseModel):
@@ -14,6 +14,9 @@ class Analyst(BaseModel):
     name: str = Field(
         description="Name of the analyst."
     )
+    gender: str = Field(
+        description="Gender of the analyst."
+    )
     role: str = Field(
         description="Role of the analyst in the context of the topic.",
     )
@@ -22,7 +25,7 @@ class Analyst(BaseModel):
     )
     @property
     def persona(self) -> str:
-        return f"Name: {self.name}\nRole: {self.role}\nAffiliation: {self.affiliation}\nDescription: {self.description}\n"
+        return f"Name: {self.name}\Gender: {self.gender}\nRole: {self.role}\nAffiliation: {self.affiliation}\nDescription: {self.description}\n"
 
 class Perspectives(BaseModel):
     analysts: List[Analyst] = Field(
@@ -55,3 +58,4 @@ class ResearchGraphState(TypedDict):
     content: str # Content for the final report
     conclusion: str # Conclusion for the final report
     final_report: str # Final report
+    podcast_script: str # Podcast script

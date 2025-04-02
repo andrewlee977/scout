@@ -3,7 +3,6 @@
 import requests
 import logging
 import inspect
-import os
 from typing import List
 from openai import OpenAI
 from app.config import settings  # Use the existing instance, not the class
@@ -190,9 +189,7 @@ def get_all_tools():
     """Returns all available tools."""
     logger.info("Registering tools...")  # Add this to verify tools are being registered
     
-    tools = TOOLS_REGISTRY
-    print('tools===============', tools)
-    
+    tools = TOOLS_REGISTRY    
 
     logger.info(f"Registered tools: {[tool.__name__ for tool in tools]}")
     return tools
