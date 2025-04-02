@@ -1,31 +1,51 @@
-# Voice News Agent
+# AI Research Assistant & Podcaster
 
-A **FastAPI**-powered web application that fetches latest tech news articles with text input questions. Project takes this input to run an OpenAI LLM with a news fetcher tool and reads a summary using TTS.
+A **FastAPI**-powered web application that generates comprehensive research reports and converts them into engaging podcast-style discussions using OpenAI's text-to-speech capabilities. Also allows you to download the report if reading is preferred.
 
 ---
 
 ## Overview
 
-This application is designed to take text input and perform tasks like fetching news.
+This application transforms research topics into dynamic content through multiple stages:
 
-- **FastAPI** for the backend server  
-- **HTML** for basic rendering the frontend pages  
-
-By separating concerns—voice capture, speech-to-text conversion, and task delegation via different tools—this project aims to be **extensible**, **easy to integrate**, and **fun to use**.
-
-
----
+1. **Research Analysis**: Generates a team of AI analysts with diverse perspectives/personas
+2. **Report Generation**: Creates a detailed research report with citations
+3. **Podcast Conversion**: Transforms the report into a natural conversation
+4. **Audio Synthesis**: Converts the podcast script into spoken audio using distinct voices for each analyst
 
 ## Features
 
-- **FastAPI Backend**  
-  Simple, async, and efficient server that processes requests and routes them to the correct functionalities.
+### Backend (FastAPI)
+- Dynamic analyst generation with customizable roles and perspectives
+- Research report generation with structured sections (introduction, insights, conclusion)
+- Podcast script generation with natural dialogue
+- OpenAI TTS integration with voice personality matching
+- PDF report generation and download functionality
 
-- **HTML Frontend**  
-  Provides a clean, server-rendered HTML interface for demoing or manual input.
+### Frontend
+- Clean, responsive HTML interface
+- Real-time loading indicators
+- Custom audio player with progress tracking
+- Interactive feedback system for analyst selection
+- Download options for research reports
 
-- **Modular Tools**  
-  - **NewsTool** for the latest headlines  
+### Audio Processing
+- Multi-voice podcast generation using OpenAI's TTS API
+- Voice assignment based on analyst gender and role
+- Custom voice instructions for personality matching
+- Automatic audio segment combination with natural pauses
 
-- **Agent-Oriented Design**  
-  A central “agent” parses the text input and delegates tasks to the corresponding tools
+### Research Workflow
+- Initial topic submission by the user
+- Analyst team generation with feedback options
+- Report generation with cited sources
+- Podcast script creation
+- Multi-voice audio synthesis
+
+## Technical Features
+- FastAPI for async request handling
+- Jinja2 templating for dynamic HTML
+- PDF report generation with FPDF
+- Audio processing with pydub
+- Structured logging system
+- State management for research workflow
