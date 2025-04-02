@@ -13,11 +13,18 @@ from io import BytesIO
 from pydub import AudioSegment
 import re
 from contextlib import asynccontextmanager
+from uuid import uuid4
 
 
 # Determine the base directory
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATE_DIR = os.path.join(os.path.dirname(BASE_DIR), 'templates')
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 logger = logging.getLogger(__name__)
 
 @asynccontextmanager
@@ -54,7 +61,7 @@ async def submit_text(request: Request):
     graph = request.app.state.graph
     max_analysts = 3
     topic = user_text
-    thread = {"configurable": {"thread_id": "1"}}
+    thread = {"configurable": {"thread_id": str(uuid4())}}
 
     # Initial run to get analysts
     graph.invoke({"topic": topic, "max_analysts": max_analysts}, thread)
@@ -196,102 +203,113 @@ async def submit_feedback(request: Request):
     max_analysts = int(form_data.get("max_analysts", "3"))
     
     thread = {"configurable": {"thread_id": thread_id}}
-    
-    # Use existing graph from app state
     graph = request.app.state.graph
-    
-    # Keep it simple - just update the feedback
-    graph.update_state(thread, {
-        "human_analyst_feedback": feedback
-    }, as_node="human_feedback")    
 
-    # Update state with feedback
-    graph.update_state(thread, {
-        "human_analyst_feedback": feedback
-    }, as_node="human_feedback")
-
-    # Continue execution - graph will run initiate_all_interviews
-    for event in graph.stream(None, thread, stream_mode="values"):
-        analysts = event.get('analysts', '')
-        if analysts:
-            for analyst in analysts:
-                logger.info(f"Name: {analyst.name}")
-                logger.info(f"Gender: {analyst.gender}")
-                logger.info(f"Affiliation: {analyst.affiliation}")
-                logger.info(f"Role: {analyst.role}")
-                logger.info(f"Description: {analyst.description}")
-                logger.info("-" * 50) 
-
-    graph.update_state(thread, {"human_analyst_feedback": 
-                            None}, as_node="human_feedback")
-    
-    # Continue
-    for event in graph.stream(None, thread, stream_mode="updates"):
-        logger.info("--Node--")
-        node_name = next(iter(event.keys()))
-        logger.info(node_name)
-
-    final_state = graph.get_state(thread)
-    report = final_state.values.get('final_report')
-    podcast = final_state.values.get('podcast_script')
-    analysts = final_state.values.get('analysts', [])
-    
-    # Debug print to verify analysts data
-    logger.info("\nAvailable Analysts:")
-    for analyst in analysts:
-        logger.info(f"Name: {analyst.name}, Gender: {analyst.gender}")
-    
-    audio = None
-    if podcast:
-        try:
-            segments = split_by_speaker(podcast, analysts)
-            combined_audio = None
-            
-            for segment in segments:
-                logger.info(f"\nProcessing audio for: {segment['speaker']}")
-                logger.info(f"Using voice: {segment['voice']}")  # Debug print
+    logger.info("Gathering User feedback...")
+    if feedback == "approve":
+        # Continue with existing approval flow
+        logger.info(f"User feedback: Approved")
+        graph.update_state(thread, {"human_analyst_feedback": None}, as_node="human_feedback")
+        
+        # Stream the graph to continue execution
+        logger.info("Continuing graph execution after approval...")
+        for event in graph.stream(None, thread, stream_mode="values"):
+            logger.info(f"Processing node: {event.keys()}")
+        
+        # Get final state after streaming
+        final_state = graph.get_state(thread)
+        report = final_state.values.get('final_report')
+        podcast = final_state.values.get('podcast_script')
+        analysts = final_state.values.get('analysts', [])
+        
+        # Your existing audio generation code...
+        audio = None
+        if podcast:
+            try:
+                segments = split_by_speaker(podcast, analysts)
+                combined_audio = None
                 
-                chunks = chunk_text(segment['content'])
-                for chunk in chunks:
-                    logger.info(f"Generating audio with voice: {segment['voice']}")  # Debug print
-                    chunk_audio = text_to_speech(
-                        text=chunk,
-                        voice=segment['voice'],  # Make sure this is passing correctly
-                        instructions=segment['instructions']
-                    )
+                for segment in segments:
+                    logger.info(f"Processing audio for: {segment['speaker']}")
+                    logger.info(f"Using voice: {segment['voice']}")  # Debug print
                     
-                    # Convert to AudioSegment
-                    audio_segment = AudioSegment.from_mp3(BytesIO(chunk_audio))
-                    
-                    if combined_audio is None:
-                        combined_audio = audio_segment
-                    else:
-                        combined_audio += AudioSegment.silent(duration=250) + audio_segment
-            
-            # Convert final audio to bytes
-            if combined_audio:
-                output = BytesIO()
-                combined_audio.export(output, format="mp3")
-                audio = output.getvalue()
+                    chunks = chunk_text(segment['content'])
+                    for chunk in chunks:
+                        logger.info(f"Generating audio with voice: {segment['voice']}")  # Debug print
+                        chunk_audio = text_to_speech(
+                            text=chunk,
+                            voice=segment['voice'],  # Make sure this is passing correctly
+                            instructions=segment['instructions']
+                        )
+                        
+                        # Convert to AudioSegment
+                        audio_segment = AudioSegment.from_mp3(BytesIO(chunk_audio))
+                        
+                        if combined_audio is None:
+                            combined_audio = audio_segment
+                        else:
+                            combined_audio += AudioSegment.silent(duration=250) + audio_segment
                 
-        except Exception as e:
-            logger.info(f"Error generating audio: {e}")
-            audio = None
+                # Convert final audio to bytes
+                if combined_audio:
+                    output = BytesIO()
+                    combined_audio.export(output, format="mp3")
+                    audio = output.getvalue()
+                    
+            except Exception as e:
+                logger.error(f"Error generating audio: {e}")
+                audio = None
 
-    return templates.TemplateResponse(
-         "index.html", 
-         {
-             "request": request,
-             "result": report,
-             "audio_content": audio
-         }
-     )
+        return templates.TemplateResponse(
+            "index.html",
+            {
+                "request": request,
+                "result": report,
+                "audio_content": audio,
+                "show_feedback_form": True,
+                "analysts": analysts,
+                "topic": topic,
+                "max_analysts": max_analysts,
+                "thread_id": thread_id,
+                "loading": True
+            }
+        )
+    else:
+        # Handle feedback and show new analysts
+        logger.info(f"User feedback: {feedback}")
+        graph.update_state(thread, {"human_analyst_feedback": feedback}, as_node="human_feedback")
+        
+        # Get new analysts
+        new_analysts = []
+        for event in graph.stream(None, thread, stream_mode="values"):
+            analysts = event.get('analysts', '')
+            if analysts:
+                new_analysts = analysts
+        
+        # Return template with new analysts for review
+        return templates.TemplateResponse(
+            "index.html",
+            {
+                "request": request,
+                "show_feedback_form": True,
+                "analysts": new_analysts,
+                "topic": topic,
+                "max_analysts": max_analysts,
+                "thread_id": thread_id
+            }
+        )
 
 @app.get("/download-report")
 async def download_report(request: Request):
+    # Get thread_id from query parameters
+    thread_id = request.query_params.get("thread_id")
+    if not thread_id:
+        logger.error("No thread_id provided for report download")
+        return {"error": "No thread ID provided"}
+    
     # Get the graph and thread from app state
     graph = request.app.state.graph
-    thread = {"configurable": {"thread_id": "1"}}
+    thread = {"configurable": {"thread_id": thread_id}}
     
     # Get final state from graph
     final_state = graph.get_state(thread)

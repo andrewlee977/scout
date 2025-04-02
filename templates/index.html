@@ -324,7 +324,7 @@
             <div class="report-section">
                 {% if result %}
                     <h2>Research Report</h2>
-                    <button onclick="window.location.href='/download-report'" class="download-button">
+                    <button onclick="window.location.href='/download-report?thread_id={{ thread_id }}'" class="download-button">
                         Download PDF Report
                     </button>
                 {% endif %}
