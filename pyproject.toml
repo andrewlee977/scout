@@ -22,6 +22,11 @@ fpdf2 = "^2.8.2"
 pydub = "^0.25.1"
 ffmpeg-python = "^0.2.0"
 langgraph = "^0.3.23"
+langchain-openai = "^0.3.12"
+langchain = "^0.3.22"
+langchain-core = "^0.3.49"
+requests = "^2.32.3"
+typing-extensions = "^4.13.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
