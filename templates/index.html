@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Podcast Studio</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', path='favicon.png') }}">
     <!-- Add Google Fonts for better typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -186,12 +187,18 @@
             padding: calc(var(--spacing-unit) * 4) 0; /* 32px */
         }
 
+        .loading-content {
+            text-align: center;
+        }
+
         .loading-circle {
             width: 32px; /* Larger */
             height: 32px;
             background: var(--loading-gradient);
             border-radius: 50%;
             animation: pulse 1.5s infinite ease-in-out;
+            margin: 0 auto;
+            margin-bottom: calc(var(--spacing-unit) * 2); /* Add space between circle and text */
         }
 
         @keyframes pulse {
@@ -360,7 +367,11 @@
 
             <!-- Loading Indicator -->
             <div id="loading" class="loading-container" style="display: none;">
-                <div class="loading-circle"></div>
+                <div class="loading-content">
+                    <div class="loading-circle"></div>
+                    <h3>AI Research in Progress</h3>
+                    <p class="loading-message">Your AI analysts are conducting deep research on your topic. This process involves multiple steps including agent-to-agent interviews, web searches, data analysis, and content synthesis. Please wait while we generate comprehensive insights.</p>
+                </div>
             </div>
 
             <!-- Analyst Feedback Section (Conditional) -->
@@ -465,7 +476,7 @@
                 showLoading();
                  // Disable button
                  this.querySelector('button[type="submit"]').disabled = true;
-                 this.querySelector('button[type="submit"]').textContent = 'Submitting...';
+                 this.querySelector('button[type="submit"]').textContent = 'Conducting Research...';
              });
          }
 

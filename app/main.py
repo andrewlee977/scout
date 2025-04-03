@@ -14,6 +14,7 @@ from pydub import AudioSegment
 import re
 from contextlib import asynccontextmanager
 from uuid import uuid4
+from fastapi.staticfiles import StaticFiles
 
 
 # Determine the base directory
@@ -38,6 +39,10 @@ async def lifespan(app: FastAPI):
 
 # Initialize FastAPI app
 app = FastAPI(lifespan=lifespan)
+
+# Configure static files
+STATIC_DIR = os.path.join(os.path.dirname(BASE_DIR), 'app', 'static')
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 # Create Jinja2Templates instance
 templates = Jinja2Templates(directory=TEMPLATE_DIR)

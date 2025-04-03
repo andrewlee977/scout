@@ -6,7 +6,11 @@ from app.prompts.prompts import question_instructions, search_instructions, answ
 from app.config import settings
 
 
-tavily_search = TavilySearchResults(max_results=3)
+# Initialize Tavily search with API key from settings
+tavily_search = TavilySearchResults(
+    api_key=settings.TAVILY_API_KEY,
+    max_results=3
+)
 
 
 class InterviewBuilder:
@@ -30,12 +34,20 @@ class InterviewBuilder:
         structured_llm = self.llm.with_structured_output(SearchQuery)
         search_query = structured_llm.invoke([SystemMessage(content=self.search_instructions)] + state['messages'])
         search_docs = tavily_search.invoke(search_query.search_query)
-        formatted_search_docs = "\n\n---\n\n".join(
-            [
-                f'<Document href="{doc["url"]}"/>\n{doc["content"]}\n</Document>'
-                for doc in search_docs
-            ]
-        )
+        
+        # Handle both string and dictionary formats
+        formatted_docs = []
+        for doc in search_docs:
+            if isinstance(doc, dict):
+                # Handle dictionary format
+                url = doc.get('url', '')
+                content = doc.get('content', '')
+                formatted_docs.append(f'<Document href="{url}"/>\n{content}\n</Document>')
+            else:
+                # Handle string format
+                formatted_docs.append(f'<Document>\n{doc}\n</Document>')
+        
+        formatted_search_docs = "\n\n---\n\n".join(formatted_docs)
         return {"context": [formatted_search_docs]}
 
     def search_wikipedia(self, state: InterviewState):
