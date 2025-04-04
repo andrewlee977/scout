@@ -13,6 +13,12 @@ This application transforms research topics into dynamic content through multipl
 3. **Podcast Conversion**: Transforms the report into a natural conversation
 4. **Audio Synthesis**: Converts the podcast script into spoken audio using distinct voices for each analyst
 
+### Research Graph Visualization
+
+Below is a visualization of the research workflow and how different components interact:
+
+![Research Graph](static/research_graph.png)
+
 ## Features
 
 ### Backend (FastAPI)
