@@ -17,7 +17,7 @@ This application transforms research topics into dynamic content through multipl
 
 Below is a visualization of the research workflow and how different components interact:
 
-![Research Graph](static/research_graph.png)
+![Research Graph](app/static/research_graph.png)
 
 ## Features
 
