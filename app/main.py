@@ -95,7 +95,7 @@ def get_voice_for_role(role, gender=None):
         'shimmer': {'instructions': "Speak in a professional, broadcast style"},
         'onyx': {'instructions': "Speak with authority and gravitas"},
         'echo': {'instructions': "Speak naturally and conversationally"},
-        'alloy': {'instructions': "Speak clearly and precisely"},
+        'ash': {'instructions': "Speak clearly and precisely"},
         'nova': {'instructions': "Speak with warmth and engagement"},
         'fable': {'instructions': "Speak with energy and enthusiasm"},
         'coral': {'instructions': "Speak thoughtfully and with clarity, you choose your words carefully"}
@@ -114,7 +114,7 @@ def get_voice_for_role(role, gender=None):
         }
     
     # Available voices by gender
-    male_voices = ['onyx', 'echo', 'alloy']
+    male_voices = ['onyx', 'echo', 'ash']
     female_voices = ['nova', 'fable', 'coral']
     
     # Get the voice
@@ -141,7 +141,7 @@ def get_voice_for_role(role, gender=None):
             selected_voice = available_voices[0]
     
     if not selected_voice:
-        selected_voice = 'alloy'
+        selected_voice = 'ash'
     
     # Store the voice assignment
     get_voice_for_role.speaker_voice_mapping[role] = selected_voice
