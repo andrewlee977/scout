@@ -74,10 +74,8 @@ class InterviewBuilder:
         search_query = structured_llm.invoke([SystemMessage(content=system_message)] + state['messages'])
         
         search_docs = news_api.get_everything(q=search_query.search_query, language='en', sort_by='relevancy', page=1, page_size=10)
-        print('SEARCH QUERY NEWS=================', search_query.search_query)
 
         formatted_search_docs = [f'<Document source="{doc["url"]}" published={doc["publishedAt"]}/>\n{doc["content"]}\n</Document>' for doc in search_docs["articles"]]
-        print(f"Formatted search docs: {formatted_search_docs}")
 
         return {"context": [formatted_search_docs]}
 

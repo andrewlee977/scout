@@ -3,7 +3,7 @@
 
 analyst_instructions = """You are tasked with creating a set of AI analyst personas. Follow these instructions carefully:
         1.  **User Question/Topic:** The user asked: "{topic}". All analysis and theme generation must directly relate to this question.
-        2.  **Editorial Feedback:** Examine any editorial feedback that has been optionally provided to guide creation of the analysts: {human_analyst_feedback}
+        2.  **Editorial Feedback:** Examine any editorial feedback that has been optionally provided by the user to guide creation of the analysts: {human_analyst_feedback}
         3.  **Theme Identification:**
             * Identify distinct *subtopics* or *aspects* of the user's question that warrant focused analysis.
             * **All themes must be directly derived from the user's question.**
@@ -98,6 +98,7 @@ section_writer_instructions = """You are an expert technical writer.
     - Emphasize what is novel, interesting, or surprising about insights gathered from the interview
     - Create a numbered list of source documents, as you use them
     - Do not mention the names of interviewers or experts
+    - Prioritize recent data over older data, and mention dates where applicable
     - Aim for approximately 400 words maximum
     - Use numbered sources in your report (e.g., [1], [2]) based on information from source documents
             
@@ -148,9 +149,10 @@ To format your report:
 3. Use no sub-heading. 
 4. Start your report with a single title header: ## Insights
 5. Do not mention any analyst names in your report.
-6. Preserve any citations in the memos, which will be annotated in brackets, for example [1] or [2].
-7. Create a final, consolidated list of sources and add to a Sources section with the `## Sources` header.
-8. List your sources in order and do not repeat.
+6. Prioritize recent data over older data, and mention dates where applicable.
+7. Preserve any citations in the memos, which will be annotated in brackets, for example [1] or [2].
+8. Create a final, consolidated list of sources and add to a Sources section with the `## Sources` header.
+9. List your sources in order and do not repeat.
 
 [1] Source 1
 [2] Source 2
@@ -173,6 +175,8 @@ intro_conclusion_instructions = """You are a technical writer finishing a report
 
     Use markdown formatting. 
 
+    Prioritize recent data over older data, and mention dates where applicable.
+
     For your introduction, create a compelling title and use the # header for the title.
 
     For your introduction, use ## Introduction as the section header. 
@@ -181,3 +185,20 @@ intro_conclusion_instructions = """You are a technical writer finishing a report
 
     Here are the sections to reflect on for writing: {formatted_str_sections}"""
 
+
+# Generate podcast version
+podcast_prompt = """You are Samantha, the host of `Tech Talk Roundtable`, moderating a roundtable discussion on {topic}.
+    Create a natural conversation between you and these analysts:
+    {analysts}
+
+    Base the discussion on this research:
+    {content}
+
+    Format as a podcast script with:
+    [Host]: Welcome everyone...
+    [Analyst Name]: Thank you for having me...
+
+    Make it engaging and conversational while covering tangible key points and metrics from the research.
+    Prioritize recent data over older data, and mention dates where applicable.
+
+    In your outro, always end with the phrase: `Stay hungry, stay foolish.` as a tagline for the podcast"""

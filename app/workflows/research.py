@@ -7,13 +7,14 @@ from langgraph.constants import Send
 from langchain_core.messages import HumanMessage
 from langchain_core.messages import SystemMessage
 from app.config import settings
-from app.prompts.prompts import intro_conclusion_instructions, report_writer_instructions
+from app.prompts.prompts import intro_conclusion_instructions, report_writer_instructions, podcast_prompt
 
 
 class ConductResearch:
     def __init__(self):
         self.llm = settings.llm
         self.interview_builder = InterviewBuilder()
+        self.podcast_prompt = podcast_prompt
     
     @staticmethod
     def initiate_all_interviews(state: ResearchGraphState):
@@ -88,24 +89,11 @@ class ConductResearch:
         conclusion = self.llm.invoke([SystemMessage(conclusion_prompt)]).content
 
         final_report = f"{introduction}\n\n{content}\n\n{conclusion}"
+        formatted_analysts = [f"{a.name} ({a.role})" for a in analysts]
 
-        # Generate podcast version
-        podcast_prompt = f"""You are Samantha, the host of `Tech Talk Roundtable`, moderating a roundtable discussion on {topic}.
-        Create a natural conversation between you and these analysts:
-        {[f"{a.name} ({a.role})" for a in analysts]}
+        system_message = self.podcast_prompt.format(topic=topic, analysts=formatted_analysts, content=content)
 
-        Base the discussion on this research:
-        {content}
-
-        Format as a podcast script with:
-        [Host]: Welcome everyone...
-        [Analyst Name]: Thank you for having me...
-        
-        Make it engaging and conversational while covering tangible key points and metrics from the research.
-        
-        In your outro, always end with the phrase: `Stay hungry, stay foolish.` as a tagline for the podcast"""
-
-        podcast_version = self.llm.invoke([SystemMessage(podcast_prompt)]).content
+        podcast_version = self.llm.invoke([SystemMessage(system_message)]).content
 
         return {
             "final_report": final_report,
