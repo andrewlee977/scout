@@ -39,11 +39,3 @@ class CreateAnalysts:
     @staticmethod
     def human_feedback(state: GenerateAnalystsState):
         pass
-
-    @staticmethod
-    def should_continue(state: GenerateAnalystsState):
-        human_analyst_feedback = state.get('human_analyst_feedback', None)
-        if human_analyst_feedback:
-            return "create_analysts"
-        return END
-

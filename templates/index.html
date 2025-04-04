@@ -227,18 +227,24 @@
         }
 
         .previous-feedback {
-            background-color: #FFFBEB; /* Light Yellow */
-            border: 1px solid #FDE68A; /* Yellow Border */
+            background-color: var(--card-background);
+            border-left: 4px solid var(--primary-color);
             border-radius: var(--border-radius-md);
             padding: calc(var(--spacing-unit) * 2);
-            margin-bottom: calc(var(--spacing-unit) * 2);
-            font-style: italic;
-            color: #B45309; /* Amber Text */
+            margin-bottom: calc(var(--spacing-unit) * 3);
         }
 
         .previous-feedback h3 {
-             color: #92400E; /* Darker Amber */
-             margin-bottom: var(--spacing-unit);
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-unit);
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .previous-feedback p {
+            color: var(--text-secondary);
+            font-style: italic;
+            margin: 0;
         }
 
         .analysts-container {
@@ -465,9 +471,9 @@
                 <div class="analysts-review card">
                     <h2>Review Generated Analysts</h2>
 
-                    {% if previous_feedback and previous_feedback != "approve" %}
+                    {% if previous_feedback %}
                         <div class="previous-feedback">
-                            <h3>Your Previous Feedback:</h3>
+                            <h3>Based on your feedback:</h3>
                             <p>"{{ previous_feedback }}"</p>
                         </div>
                     {% endif %}

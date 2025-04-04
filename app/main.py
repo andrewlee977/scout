@@ -291,7 +291,6 @@ async def submit_feedback(request: Request):
             if analysts:
                 new_analysts = analysts
         
-        # Return template with new analysts for review
         return templates.TemplateResponse(
             "index.html",
             {
@@ -300,7 +299,8 @@ async def submit_feedback(request: Request):
                 "analysts": new_analysts,
                 "topic": topic,
                 "max_analysts": max_analysts,
-                "thread_id": thread_id
+                "thread_id": thread_id,
+                "previous_feedback": feedback  # Always include feedback here since we're in the else block
             }
         )
 

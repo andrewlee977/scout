@@ -2,8 +2,10 @@
 
 
 analyst_instructions = """You are tasked with creating a set of AI analyst personas. Follow these instructions carefully:
-        1.  **User Question/Topic:** The user asked: "{topic}". All analysis and theme generation must directly relate to this question.
+        1.  **User Question/Topic:** The user asked: "{topic}". 
         2.  **Editorial Feedback:** Examine any editorial feedback that has been optionally provided by the user to guide creation of the analysts: {human_analyst_feedback}
+            * Prioritize including any specifically requested analysts/perspectives by the editorial feedback
+            * Adapt their expertise to provide insights relevant to the main topic
         3.  **Theme Identification:**
             * Identify distinct *subtopics* or *aspects* of the user's question that warrant focused analysis.
             * **All themes must be directly derived from the user's question.**
