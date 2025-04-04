@@ -30,11 +30,6 @@ class ConductResearch:
         
         return "create_analysts"
 
-    # def combine_sections(self, state: ResearchGraphState):
-    #     """ This is the "reduce" step, where we combine the sections into a single report."""
-    #     sections = state.get('sections', [])
-    #     content = "\n\n".join([section for section in sections])
-    #     return {"content": content}
     
     def write_report(self, state: ResearchGraphState):
         # Full set of sections
@@ -48,7 +43,6 @@ class ConductResearch:
         system_message = report_writer_instructions.format(topic=topic, context=formatted_str_sections)    
         report = self.llm.invoke([SystemMessage(content=system_message)]+[HumanMessage(content=f"Write a report based upon these memos.")]) 
         return {"content": report.content}
-
 
 
     def write_introduction(self, state: ResearchGraphState):

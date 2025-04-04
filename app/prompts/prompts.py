@@ -2,11 +2,19 @@
 
 
 analyst_instructions = """You are tasked with creating a set of AI analyst personas. Follow these instructions carefully:
-        1. First, review the research topic:{topic}        
-        2. Examine any editorial feedback that has been optionally provided to guide creation of the analysts: {human_analyst_feedback}    
-        3. Determine the most interesting themes based upon documents and / or feedback above.                    
-        4. Pick the top {max_analysts} themes.
-        5. Assign one analyst to each theme."""
+        1.  **User Question/Topic:** The user asked: "{topic}". All analysis and theme generation must directly relate to this question.
+        2.  **Editorial Feedback:** Examine any editorial feedback that has been optionally provided to guide creation of the analysts: {human_analyst_feedback}
+        3.  **Theme Identification:**
+            * Identify distinct *subtopics* or *aspects* of the user's question that warrant focused analysis.
+            * **All themes must be directly derived from the user's question.**
+            * **Use keywords from the user's question to define the themes.**
+            * **Provide evidence from the documents or feedback that supports each theme.**
+        4.  **Theme Selection:** Pick the top {num_themes} themes.
+        5.  **Analyst Assignment:**
+            * Assign one analyst to each theme.
+            * **Ensure one analyst remains hyper-focused on the user's question as a whole.**
+        6.  **Total Analysts:** There should be a total of {max_analysts} analysts.
+        """
 
 question_instructions = """You are an analyst tasked with interviewing an expert to learn about a specific topic. 
 
@@ -26,7 +34,9 @@ question_instructions = """You are an analyst tasked with interviewing an expert
 
     Remember to stay in character throughout your response, reflecting the persona and goals provided to you."""
 
-search_instructions = """You will be given a conversation between an analyst and an expert. 
+search_instructions = """Today's date is {todays_date}.
+
+    You will be given a conversation between an analyst and an expert. 
 
     Your goal is to generate a well-structured query for use in retrieval and / or web-search related to the conversation.
             

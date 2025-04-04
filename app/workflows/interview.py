@@ -4,14 +4,15 @@ from langchain_community.document_loaders import WikipediaLoader
 from app.models.models import InterviewState, SearchQuery
 from app.prompts.prompts import question_instructions, search_instructions, answer_instructions, section_writer_instructions
 from app.config import settings
-
+from newsapi import NewsApiClient
+import datetime
 
 # Initialize Tavily search with API key from settings
 tavily_search = TavilySearchResults(
     api_key=settings.TAVILY_API_KEY,
     max_results=3
 )
-
+news_api = NewsApiClient(api_key=settings.NEWS_API_KEY)
 
 class InterviewBuilder:
     def __init__(self):
@@ -20,6 +21,7 @@ class InterviewBuilder:
         self.search_instructions = search_instructions
         self.answer_instructions = answer_instructions
         self.section_writer_instructions = section_writer_instructions
+        self.todays_date = datetime.date.today().strftime("%Y-%m-%d")
 
     def generate_question(self, state: InterviewState):
         """ Node to generate a question """
@@ -31,8 +33,9 @@ class InterviewBuilder:
 
     def search_web(self, state: InterviewState):
         """ Retrieve docs from web search """
+        system_message = self.search_instructions.format(todays_date=self.todays_date)
         structured_llm = self.llm.with_structured_output(SearchQuery)
-        search_query = structured_llm.invoke([SystemMessage(content=self.search_instructions)] + state['messages'])
+        search_query = structured_llm.invoke([SystemMessage(content=system_message)] + state['messages'])
         search_docs = tavily_search.invoke(search_query.search_query)
         
         # Handle both string and dictionary formats
@@ -53,7 +56,8 @@ class InterviewBuilder:
     def search_wikipedia(self, state: InterviewState):
         """ Retrieve docs from wikipedia """
         structured_llm = self.llm.with_structured_output(SearchQuery)
-        search_query = structured_llm.invoke([SystemMessage(content=self.search_instructions)] + state['messages'])
+        system_message = self.search_instructions.format(todays_date=self.todays_date)
+        search_query = structured_llm.invoke([SystemMessage(content=system_message)] + state['messages'])
         search_docs = WikipediaLoader(query=search_query.search_query, load_max_docs=2).load()
         formatted_search_docs = "\n\n---\n\n".join(
             [
@@ -61,6 +65,20 @@ class InterviewBuilder:
                 for doc in search_docs
             ]
         )
+        return {"context": [formatted_search_docs]}
+    
+    def search_news(self, state: InterviewState):
+        """ Retrieve docs from NewsAPI"""
+        structured_llm = self.llm.with_structured_output(SearchQuery)
+        system_message = self.search_instructions.format(todays_date=self.todays_date)
+        search_query = structured_llm.invoke([SystemMessage(content=system_message)] + state['messages'])
+        
+        search_docs = news_api.get_everything(q=search_query.search_query, language='en', sort_by='relevancy', page=1, page_size=10)
+        print('SEARCH QUERY NEWS=================', search_query.search_query)
+
+        formatted_search_docs = [f'<Document source="{doc["url"]}" published={doc["publishedAt"]}/>\n{doc["content"]}\n</Document>' for doc in search_docs["articles"]]
+        print(f"Formatted search docs: {formatted_search_docs}")
+
         return {"context": [formatted_search_docs]}
 
     def generate_answer(self, state: InterviewState):

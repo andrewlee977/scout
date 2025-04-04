@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     """Application settings."""
     
     # API Keys
-    # NEWS_API_KEY: str
+    NEWS_API_KEY: str
     OPENAI_API_KEY: str
     TAVILY_API_KEY: str
     # GOOGLE_APPLICATION_CREDENTIALS: str
