@@ -179,6 +179,19 @@
              transform: scale(0.98);
         }
 
+        button:disabled, .button:disabled {
+            background-color: var(--text-secondary);
+            cursor: not-allowed;
+            opacity: 0.7;
+            transform: none;
+        }
+
+        button:disabled:hover, .button:disabled:hover {
+            background-color: var(--text-secondary);
+            box-shadow: none;
+            transform: none;
+        }
+
         /* Loading Indicator */
         .loading-container {
             display: flex;
@@ -341,6 +354,76 @@
              }
         }
 
+        .example-questions {
+            margin-top: calc(var(--spacing-unit) * 3);
+            text-align: center;
+        }
+        
+        .example-questions h3 {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-bottom: calc(var(--spacing-unit) * 2);
+        }
+        
+        .example-buttons {
+            display: flex;
+            gap: calc(var(--spacing-unit) * 2);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .example-button {
+            flex: 1;
+            min-width: 200px;
+            max-width: 250px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: calc(var(--spacing-unit) * 1.5);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .example-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+        }
+
+        .example-button:active {
+            transform: translateY(0);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Distribute colors among buttons */
+        .example-button:nth-child(1) {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+        
+        .example-button:nth-child(2) {
+            background: linear-gradient(135deg, var(--secondary-color), var(--success-color));
+        }
+        
+        .example-button:nth-child(3) {
+            background: linear-gradient(135deg, var(--success-color), var(--primary-color));
+        }
+
+        /* Hover states for each button */
+        .example-button:nth-child(1):hover {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+        }
+        
+        .example-button:nth-child(2):hover {
+            background: linear-gradient(135deg, var(--success-color), var(--secondary-color));
+        }
+        
+        .example-button:nth-child(3):hover {
+            background: linear-gradient(135deg, var(--primary-color), var(--success-color));
+        }
+
     </style>
 </head>
 <body>
@@ -352,17 +435,20 @@
 
             <!-- Initial Input Form Card -->
             <div class="card">
-                <form action="/submit" method="post" id="initialForm">
-                    <input
-                        type="text"
-                        name="user_input"
-                        placeholder="Enter topic (e.g., 'what is the founding story of nvidia?')"
-                        required
-                        maxlength="200"
-                        aria-label="Podcast Topic Input"
-                    >
-                    <button type="submit">Generate Analysis</button>
+                <form method="post" action="/submit" id="topicForm">
+                    <input type="text" id="user_input" name="user_input" placeholder="What would you like to learn?" required>
+                    <button type="submit" class="submit-button">Generate Analysis</button>
                 </form>
+                
+                <!-- Example Questions -->
+                <div class="example-questions">
+                    <h3>Try these examples:</h3>
+                    <div class="example-buttons">
+                        <button class="example-button" data-question="What is the founding story of Nvidia?">What is the founding story of Nvidia?</button>
+                        <button class="example-button" data-question="What happened to Apple's stock price today?">What happened to Apple's stock price today?</button>
+                        <button class="example-button" data-question="Are there any recent discoveries from the James Webb Telescope?">Are there any recent discoveries from the James Webb Telescope?</button>
+                    </div>
+                </div>
             </div>
 
             <!-- Loading Indicator -->
@@ -459,7 +545,7 @@
         }
 
         // Show loading on initial form submit
-        const initialForm = document.getElementById('initialForm');
+        const initialForm = document.getElementById('topicForm');
         if (initialForm) {
             initialForm.addEventListener('submit', function() {
                 showLoading();
@@ -542,6 +628,23 @@
               if (feedbackForm) feedbackForm.querySelector('button[type="submit"]').disabled = false;
 
          });
+
+        // Handle example button clicks
+        document.querySelectorAll('.example-button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const question = this.getAttribute('data-question');
+                const submitButton = document.querySelector('.submit-button');
+                
+                // Disable and update the submit button
+                submitButton.disabled = true;
+                submitButton.textContent = 'Generating...';
+                
+                // Fill in the input and submit the form
+                document.getElementById('user_input').value = question;
+                document.getElementById('topicForm').submit();
+            });
+        });
 
     </script>
 </body>
