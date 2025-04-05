@@ -318,7 +318,7 @@ async def download_report(request: Request):
     
     # Get final state from graph
     final_state = graph.get_state(thread)
-    final_report = final_state.values.get('final_report')
+    final_report = final_state.values.get('final_report') if final_state else None
     
     # Save to temporary file
     with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp:
@@ -335,6 +335,7 @@ async def download_report(request: Request):
             pdf.multi_cell(0, 10, txt=final_report)
         else:
             pdf.multi_cell(0, 10, txt="No report content available.")
+            logger.warning(f"Download report - No report content available for thread ID: {thread_id}")
             
         pdf.output(tmp.name)
         
