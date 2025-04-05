@@ -6,13 +6,15 @@ from app.prompts.prompts import question_instructions, search_instructions, answ
 from app.config import settings
 from newsapi import NewsApiClient
 import datetime
+import logging
 
 # Initialize Tavily search with API key from settings
 tavily_search = TavilySearchResults(
     api_key=settings.TAVILY_API_KEY,
     max_results=3
 )
-news_api = NewsApiClient(api_key=settings.NEWS_API_KEY)
+
+logger = logging.getLogger(__name__)
 
 class InterviewBuilder:
     def __init__(self):
@@ -69,15 +71,54 @@ class InterviewBuilder:
     
     def search_news(self, state: InterviewState):
         """ Retrieve docs from NewsAPI"""
-        structured_llm = self.llm.with_structured_output(SearchQuery)
-        system_message = self.search_instructions.format(todays_date=self.todays_date)
-        search_query = structured_llm.invoke([SystemMessage(content=system_message)] + state['messages'])
-        
-        search_docs = news_api.get_everything(q=search_query.search_query, language='en', sort_by='relevancy', page=1, page_size=10)
-
-        formatted_search_docs = [f'<Document source="{doc["url"]}" published={doc["publishedAt"]}/>\n{doc["content"]}\n</Document>' for doc in search_docs["articles"]]
-
-        return {"context": [formatted_search_docs]}
+        try:
+            # Initialize NewsAPI client
+            logger.info("Initializing NewsAPI client...")
+            if not settings.NEWS_API_KEY:
+                raise ValueError("NEWS_API_KEY is not set")
+            logger.info(f"NewsAPI key length: {len(settings.NEWS_API_KEY)}")
+            news_api = NewsApiClient(api_key=settings.NEWS_API_KEY)
+            
+            structured_llm = self.llm.with_structured_output(SearchQuery)
+            system_message = self.search_instructions.format(todays_date=self.todays_date)
+            search_query = structured_llm.invoke([SystemMessage(content=system_message)] + state['messages'])
+            
+            logger.info(f"Making NewsAPI request with query: {search_query.search_query}")
+            
+            # Add more parameters to help with debugging
+            search_params = {
+                'q': search_query.search_query,
+                'language': 'en',
+                'sort_by': 'relevancy',
+                'page': 1,
+                'page_size': 10
+            }
+            logger.info(f"NewsAPI request parameters: {search_params}")
+            
+            search_docs = news_api.get_everything(**search_params)
+            
+            if not search_docs:
+                logger.warning("Empty response from NewsAPI")
+                return {"context": ["No recent news articles found."]}
+                
+            if 'articles' not in search_docs:
+                logger.warning(f"Unexpected NewsAPI response structure: {search_docs}")
+                return {"context": ["Error in news API response format."]}
+            
+            if not search_docs['articles']:
+                logger.warning("No articles found in NewsAPI response")
+                return {"context": ["No recent news articles found."]}
+            
+            formatted_search_docs = [f'<Document source="{doc["url"]}" published={doc["publishedAt"]}/>\n{doc["content"]}\n</Document>' for doc in search_docs["articles"]]
+            return {"context": [formatted_search_docs]}
+            
+        except Exception as e:
+            logger.error(f"Error in search_news: {str(e)}", exc_info=True)
+            logger.error(f"Error type: {type(e)}")
+            if hasattr(e, 'response'):
+                logger.error(f"Response status code: {e.response.status_code}")
+                logger.error(f"Response content: {e.response.text}")
+            return {"context": ["Error retrieving news articles. Please try again later."]}
 
     def generate_answer(self, state: InterviewState):
         """ Node to answer a question """
