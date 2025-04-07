@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Add Font Awesome for social icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
             /* Color Palette */
@@ -430,11 +432,50 @@
             background: linear-gradient(135deg, var(--primary-color), var(--success-color));
         }
 
+        /* Add Footer Styles before the @media query */
+        .footer {
+            margin-top: calc(var(--spacing-unit) * 4);
+            padding: calc(var(--spacing-unit) * 3) 0;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: calc(var(--spacing-unit) * 3);
+            margin: 0 auto;
+        }
+
+        .social-icon {
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .social-icon:hover {
+            color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .social-icon.linkedin:hover {
+            color: #0077b5;
+        }
+
+        .social-icon.github:hover {
+            color: #333;
+        }
+
+        .social-icon.email:hover {
+            color: #EA4335;
+        }
+
     </style>
 </head>
 <body>
     <div class="page-wrapper">
-        <div class="container">
+    <div class="container">
 
             <h1>AI Podcast Studio</h1>
             <h3 class="subtitle">Generate insightful analysis and discussion in minutes.</h3>
@@ -496,8 +537,8 @@
                         <input type="hidden" name="max_analysts" value="{{ max_analysts }}">
                         <textarea name="feedback" placeholder="Type 'approve' or provide feedback (e.g. 'Provide Jensen Huang's perspective')" rows="4" required aria-label="Analyst Feedback Input"></textarea>
                         <button type="submit">Submit Feedback</button>
-                    </form>
-                </div>
+        </form>
+    </div>
             {% endif %}
 
             <!-- Research Report Section (Conditional) -->
@@ -653,5 +694,19 @@
         });
 
     </script>
+    <!-- Add Footer with Social Icons -->
+    <footer class="footer">
+        <div class="social-icons">
+            <a href="https://linkedin.com/in/andrewlee97" target="_blank" rel="noopener noreferrer" class="social-icon linkedin">
+                <i class="fab fa-linkedin"></i>
+            </a>
+            <a href="https://github.com/andrewlee977" target="_blank" rel="noopener noreferrer" class="social-icon github">
+                <i class="fab fa-github"></i>
+            </a>
+            <a href="mailto:andrew.lee97@gmail.com" class="social-icon email">
+                <i class="fas fa-envelope"></i>
+            </a>
+        </div>
+    </footer>
 </body>
 </html>
