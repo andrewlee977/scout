@@ -195,14 +195,6 @@ class InterviewBuilder:
         return {"messages": [answer]}
 
     @staticmethod
-    def save_interview(state: InterviewState):
-        """ Save interviews """
-        messages = state["messages"]
-        interview = get_buffer_string(messages)
-        return {"interview": interview}
-    
-
-    @staticmethod
     def route_messages(state: InterviewState, name: str = "expert"):
         """ Route between question and answer """
         messages = state["messages"]
@@ -214,8 +206,14 @@ class InterviewBuilder:
         if "Thank you so much for your help" in last_question.content:
             return 'save_interview'
         return "ask_question"
-
-
+    
+    @staticmethod
+    def save_interview(state: InterviewState):
+        """ Save interviews """
+        messages = state["messages"]
+        interview = get_buffer_string(messages)
+        return {"interview": interview}
+    
     def write_section(self, state: InterviewState):
         """ Node to answer a question """
         context = state["context"]

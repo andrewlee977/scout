@@ -61,6 +61,7 @@ async def home(request: Request):
 async def submit_text(request: Request):
     form_data = await request.form()
     user_text = form_data.get("user_input", "")
+    logger.info("User Text: %s", user_text)
 
     # Use existing graph from app state
     graph = request.app.state.graph
@@ -203,6 +204,7 @@ def chunk_text(text, chunk_size=4000):
 async def submit_feedback(request: Request):
     form_data = await request.form()
     feedback = form_data.get("feedback", "").lower()
+    logger.info("User Feedback: %s", feedback)
     thread_id = form_data.get("thread_id")
     topic = form_data.get("topic")
     max_analysts = int(form_data.get("max_analysts", "3"))
