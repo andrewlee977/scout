@@ -8,7 +8,6 @@ class Settings(BaseSettings):
     NEWS_API_KEY: str
     OPENAI_API_KEY: str
     TAVILY_API_KEY: str
-    # GOOGLE_APPLICATION_CREDENTIALS: str
     
     # Application Settings
     DEBUG: bool = False

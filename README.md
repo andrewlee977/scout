@@ -19,6 +19,34 @@ Below is a visualization of the research workflow and how different components i
 
 ![Research Graph](app/static/research_graph.png)
 
+## Setup Instructions
+
+**Clone and install**
+```bash
+git clone https://github.com/andrewlee977/scout.git
+cd scout
+poetry install
+```
+
+**Set up environment variables**
+Create a `.env` file in the root directory:
+```bash
+OPENAI_API_KEY=your_openai_api_key
+NEWS_API_KEY=your_newsapi_key
+TAVILY_API_KEY=your_tavily_key
+```
+
+Get your API keys from:
+- [OpenAI](https://platform.openai.com/api-keys)
+- [NewsAPI](https://newsapi.org/)
+- [Tavily](https://tavily.com/)
+
+**Run the app**
+```bash
+poetry run uvicorn app.main:app --reload
+```
+
+
 ## Features
 
 ### Backend (FastAPI)
