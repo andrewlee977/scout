@@ -15,6 +15,7 @@ import re
 from contextlib import asynccontextmanager
 from uuid import uuid4
 from fastapi.staticfiles import StaticFiles
+from app.config import settings
 
 
 # Determine the base directory
@@ -55,10 +56,20 @@ async def home(request: Request):
     """
     Render the main page with a simple text input form
     """
-    return templates.TemplateResponse("index.html", {"request": request, "result": None})
+    return templates.TemplateResponse("index.html", {
+        "request": request, 
+        "result": None,
+        "maintenance_mode": settings.MAINTENANCE_MODE
+    })
 
 @app.post("/submit", response_class=HTMLResponse)
 async def submit_text(request: Request):
+    if settings.MAINTENANCE_MODE:
+        return templates.TemplateResponse("index.html", {
+            "request": request,
+            "maintenance_mode": True
+        })
+
     form_data = await request.form()
     user_text = form_data.get("user_input", "")
     logger.info("User Text: %s", user_text)

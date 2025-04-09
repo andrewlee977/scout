@@ -480,23 +480,30 @@
             <h1>AI Podcast Studio</h1>
             <h3 class="subtitle">Generate insightful analysis and discussion in minutes.</h3>
 
-            <!-- Initial Input Form Card -->
-            <div class="card">
-                <form method="post" action="/submit" id="topicForm">
-                    <input type="text" id="user_input" name="user_input" placeholder="What would you like to learn?" required>
-                    <button type="submit" class="submit-button">Generate Analysis</button>
-                </form>
-                
-                <!-- Example Questions -->
-                <div class="example-questions">
-                    <h3>Try these examples:</h3>
-                    <div class="example-buttons">
-                        <button class="example-button" data-question="What is the founding story of Nvidia?">What is the founding story of Nvidia?</button>
-                        <button class="example-button" data-question="What happened to Apple's stock price today?">What happened to Apple's stock price today?</button>
-                        <button class="example-button" data-question="Are there any recent discoveries from the James Webb Telescope?">Are there any recent discoveries from the James Webb Telescope?</button>
+            {% if maintenance_mode %}
+                <div class="error-message">
+                    <h3>⚠️ Service Notice</h3>
+                    <p>We're experiencing high demand right now. Please try again later.</p>
+                </div>
+            {% else %}
+                <!-- Initial Input Form Card -->
+                <div class="card">
+                    <form method="post" action="/submit" id="topicForm">
+                        <input type="text" id="user_input" name="user_input" placeholder="What would you like to learn?" required>
+                        <button type="submit" class="submit-button">Generate Analysis</button>
+                    </form>
+                    
+                    <!-- Example Questions -->
+                    <div class="example-questions">
+                        <h3>Try these examples:</h3>
+                        <div class="example-buttons">
+                            <button class="example-button" data-question="What is the founding story of Nvidia?">What is the founding story of Nvidia?</button>
+                            <button class="example-button" data-question="What happened to Apple's stock price today?">What happened to Apple's stock price today?</button>
+                            <button class="example-button" data-question="Are there any recent discoveries from the James Webb Telescope?">Are there any recent discoveries from the James Webb Telescope?</button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            {% endif %}
 
             <!-- Loading Indicator -->
             <div id="loading" class="loading-container" style="display: none;">

@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     HOST: str = "0.0.0.0"
     PORT: int = 8000
+    MAINTENANCE_MODE: bool = True
     
     # Singleton LLM instance
     _llm: ChatOpenAI | None = None
