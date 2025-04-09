@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 import uvicorn
 import base64
 from app.workflows.graph_builder import build_research_graph
-from app.services.services import text_to_speech, generate_podcast_audio
+from app.services.services import generate_podcast_audio_async
 import tempfile
 from datetime import datetime
 from io import BytesIO
@@ -129,7 +129,7 @@ async def submit_feedback(request: Request):
         analysts = final_state.values.get('analysts', [])
         
         # Generate audio using the service function
-        audio = generate_podcast_audio(podcast, analysts) if podcast else None
+        audio = await generate_podcast_audio_async(podcast, analysts) if podcast else None
 
         return templates.TemplateResponse(
             "index.html",
