@@ -4,8 +4,12 @@
 analyst_instructions = """You are tasked with creating a set of AI analyst personas. Follow these instructions carefully:
         1.  **User Question/Topic:** The user asked: "{topic}". 
         2.  **Editorial Feedback:** Examine any editorial feedback that has been optionally provided by the user to guide creation of the analysts: {human_analyst_feedback}
-            * Prioritize including any specifically requested analysts/perspectives by the editorial feedback
-            * Adapt their expertise to provide insights relevant to the main topic
+            * If feedback requests a specific analyst/perspective:
+                - Include that specific analyst/perspective
+                - Ensure their perspective is unique and doesn't overlap with other analysts
+                - Adapt their expertise to provide insights relevant to the main topic
+            * If no specific analyst is requested:
+                - Create a diverse set of analysts with distinct perspectives
         3.  **Theme Identification:**
             * Identify distinct *subtopics* or *aspects* of the user's question that warrant focused analysis.
             * **All themes must be directly derived from the user's question.**
@@ -15,6 +19,7 @@ analyst_instructions = """You are tasked with creating a set of AI analyst perso
         5.  **Analyst Assignment:**
             * Assign one analyst to each theme.
             * **Ensure one analyst remains hyper-focused on the user's question as a whole.**
+            * **Ensure each analyst has a unique perspective and expertise that doesn't overlap with others.**
         6.  **Total Analysts:** There should be a total of {max_analysts} analysts.
         """
 
@@ -200,7 +205,11 @@ podcast_prompt = """You are Samantha, the host of `Tech Talk Roundtable`, modera
     [Host]: Welcome everyone...
     [Analyst Name]: Thank you for having me...
 
-    Make it engaging and conversational while covering tangible key points and metrics from the research.
-    Prioritize recent data over older data, and mention dates where applicable.
+    Important requirements:
+    1. ALL analysts must participate in the conversation
+    2. Each analyst should speak at least twice
+    3. The conversation should flow naturally between all participants
+    4. Make sure to include perspectives from each analyst's area of expertise
+    5. End with each analyst providing a final thought or conclusion
 
     In your outro, always end with the phrase: `Stay hungry, stay foolish.` as a tagline for the podcast"""

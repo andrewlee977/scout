@@ -63,69 +63,64 @@ def chunk_text(text, chunk_size=4000):
 
 
 def get_voice_for_role(role, gender=None):
-   """Return voice configuration based on role and gender"""
-  
-   # Voice configurations
-   voice_settings = {
-       'shimmer': {'instructions': "Speak in a professional, broadcast style"},
-       'onyx': {'instructions': "Speak with authority and gravitas"},
-       'echo': {'instructions': "Speak naturally and conversationally"},
-       'ash': {'instructions': "Speak clearly and precisely"},
-       'nova': {'instructions': "Speak with warmth and engagement"},
-       'fable': {'instructions': "Speak with energy and enthusiasm"},
-       'coral': {'instructions': "Speak thoughtfully and with clarity, you choose your words carefully"}
-   }
-  
-   # Static dictionary to store speaker-voice assignments
-   if not hasattr(get_voice_for_role, 'speaker_voice_mapping'):
-       get_voice_for_role.speaker_voice_mapping = {}
-  
-   # If this speaker already has a voice assigned, use it
-   if role in get_voice_for_role.speaker_voice_mapping:
-       voice = get_voice_for_role.speaker_voice_mapping[role]
-       return {
-           'voice': voice,
-           'instructions': voice_settings[voice]['instructions']
-       }
-  
-   # Available voices by gender
-   male_voices = ['onyx', 'echo', 'ash']
-   female_voices = ['nova', 'fable', 'coral']
-  
-   # Get the voice
-   selected_voice = None
-  
-   if 'host' in role.lower():
-       selected_voice = 'shimmer'
-   elif gender:
-       gender = gender.lower()
-       if gender == 'male':
-           used_male_voices = {v for k, v in get_voice_for_role.speaker_voice_mapping.items()
-                             if v in male_voices}
-           available_voices = [v for v in male_voices if v not in used_male_voices]
-           if not available_voices:
-               available_voices = male_voices
-           selected_voice = available_voices[0]
-          
-       elif gender == 'female':
-           used_female_voices = {v for k, v in get_voice_for_role.speaker_voice_mapping.items()
-                               if v in female_voices}
-           available_voices = [v for v in female_voices if v not in used_female_voices]
-           if not available_voices:
-               available_voices = female_voices
-           selected_voice = available_voices[0]
-  
-   if not selected_voice:
-       selected_voice = 'ash'
-  
-   # Store the voice assignment
-   get_voice_for_role.speaker_voice_mapping[role] = selected_voice
-  
-   # Return complete voice settings
-   return {
-       'voice': selected_voice,
-       'instructions': voice_settings[selected_voice]['instructions']
-   }
+    """Return voice configuration based on role and gender"""
+    
+    # Voice configurations
+    voice_settings = {
+        'shimmer': {'instructions': "Speak in a professional, broadcast style"},
+        'onyx': {'instructions': "Speak with authority and gravitas"},
+        'echo': {'instructions': "Speak naturally and conversationally"},
+        'ash': {'instructions': "Speak clearly and precisely"},
+        'nova': {'instructions': "Speak with warmth and engagement"},
+        'fable': {'instructions': "Speak with energy and enthusiasm"},
+        'coral': {'instructions': "Speak thoughtfully and with clarity, you choose your words carefully"}
+    }
+    
+    # Static dictionary to store speaker-voice assignments
+    if not hasattr(get_voice_for_role, 'speaker_voice_mapping'):
+        get_voice_for_role.speaker_voice_mapping = {}
+    
+    # If this speaker already has a voice assigned, use it
+    if role in get_voice_for_role.speaker_voice_mapping:
+        voice = get_voice_for_role.speaker_voice_mapping[role]
+        return {
+            'voice': voice,
+            'instructions': voice_settings[voice]['instructions']
+        }
+    
+    # Available voices by gender
+    male_voices = ['onyx', 'echo', 'ash']
+    female_voices = ['nova', 'fable', 'coral']
+    
+    # Get the voice
+    selected_voice = None
+    
+    if 'host' in role.lower():
+        selected_voice = 'shimmer'
+    elif gender:
+        gender = gender.lower()
+        if gender == 'male':
+            # Count how many male voices are already assigned
+            used_male_count = sum(1 for v in get_voice_for_role.speaker_voice_mapping.values() 
+                                if v in male_voices)
+            selected_voice = male_voices[used_male_count]
+        elif gender == 'female':
+            # Count how many female voices are already assigned
+            used_female_count = sum(1 for v in get_voice_for_role.speaker_voice_mapping.values() 
+                                  if v in female_voices)
+            selected_voice = female_voices[used_female_count]
+    
+    if not selected_voice:
+        selected_voice = 'ash'
+    
+    # Store the voice assignment
+    get_voice_for_role.speaker_voice_mapping[role] = selected_voice
+    
+    # Return complete voice settings
+    return {
+        'voice': selected_voice,
+        'instructions': voice_settings[selected_voice]['instructions']
+    }
 
 
 async def text_to_speech_async(text: str, voice="shimmer", instructions="") -> bytes:
@@ -150,6 +145,10 @@ async def generate_podcast_audio_async(podcast: str, analysts: list) -> bytes:
        return None
       
    try:
+       # Clear the voice mapping before generating a new podcast
+       if hasattr(get_voice_for_role, 'speaker_voice_mapping'):
+           get_voice_for_role.speaker_voice_mapping.clear()
+           
        segments = split_by_speaker(podcast, analysts)
        all_tasks = []
        segment_lengths = []  # Keep track of number of chunks per segment
@@ -200,7 +199,7 @@ async def generate_podcast_audio_async(podcast: str, analysts: list) -> bytes:
            output = BytesIO()
            combined_audio.export(output, format="mp3")
            return output.getvalue()
-          
+       return None
    except Exception as e:
-       logger.error(f"Error generating audio: {e}")
+       logger.error(f"Error generating podcast audio: {str(e)}")
        return None
